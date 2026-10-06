@@ -4,7 +4,7 @@ import { z } from "zod";
 import { requireSession } from "./appwrite";
 import { NotesError } from "./notes-service";
 
-export const smsStatusSchema = z.object({ connected: z.boolean(), phone: z.string().nullable(), mioPhone: z.string() });
+export const smsStatusSchema = z.object({ connected: z.boolean(), phone: z.string().nullable(), mioPhone: z.string(), timezone: z.string().default("America/Chicago"), defaultOffsetMinutes: z.number().int().default(15) });
 export const smsChallengeSchema = z.object({ code: z.string().regex(/^[a-f0-9]{32}$/), expiresAt: z.iso.datetime(), mioPhone: z.string() });
 export type SmsStatus = z.infer<typeof smsStatusSchema>;
 export type SmsChallenge = z.infer<typeof smsChallengeSchema>;

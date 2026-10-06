@@ -8,6 +8,7 @@ type Context = {
   req: { method: string; path: string; queryString: string; bodyText: string; headers: Record<string, string> };
   res: { json(data: unknown, status?: number): unknown; text(body: string, status?: number, headers?: Record<string, string>): unknown };
   error(message: string): void;
+  log?(message: string): void;
 };
 
 const schema = z.object({
@@ -18,7 +19,7 @@ const schema = z.object({
 });
 const xml = (text: string) => text.replace(/[<>&"']/g, (char) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;", "'": "&apos;" })[char]!);
 
-export default async function main({ req, res, error }: Context) {
+export default async function main({ req, res, error, log }: Context) {
   try {
     const config = schema.parse({
       endpoint: process.env.APPWRITE_FUNCTION_API_ENDPOINT, projectId: process.env.APPWRITE_FUNCTION_PROJECT_ID,
@@ -28,9 +29,22 @@ export default async function main({ req, res, error }: Context) {
       fallbackUrl: process.env.TWILIO_FALLBACK_SMS_URL || undefined,
     });
     const client = new Client().setEndpoint(config.endpoint).setProject(config.projectId).setKey(req.headers["x-appwrite-key"]);
-    const service = createSmsService(new TablesDB(client), new Users(client), new Messaging(client), config);
+    const service = createSmsService(new TablesDB(client), new Users(client), new Messaging(client), {
+      ...config, apiKey: process.env.OPENROUTER_API_KEY, model: process.env.MIO_AI_MODEL ?? "openai/gpt-5.6-luna",
+      timezone: process.env.MIO_DEFAULT_TIMEZONE ?? "America/Chicago",
+      defaultOffsetMinutes: Number(process.env.MIO_REMINDER_OFFSET_MINUTES ?? 15), log,
+    });
     if (req.headers["x-appwrite-trigger"] === "schedule") {
-      return res.json(await service.retryReplies());
+      return res.json(await service.work());
+    }
+    if (req.headers["x-appwrite-trigger"] === "event") {
+      // Appwrite supplies trigger/event headers; no public worker HTTP route.
+      const event = req.headers["x-appwrite-event"] ?? "";
+      const queued = event.startsWith(`tablesdb.${config.databaseId}.tables.sms_jobs.rows.`) && event.endsWith(".create");
+      const noteChanged = event.startsWith(`tablesdb.${config.databaseId}.tables.notes.rows.`) && (event.endsWith(".update") || event.endsWith(".delete"));
+      if (!queued && !noteChanged) return res.json({ ignored: true });
+      const job = z.object({ ownerId: z.string().min(1).max(36) }).parse(JSON.parse(req.bodyText));
+      return res.json(await service.work(job.ownerId));
     }
     if (["/status", "/challenge", "/disconnect"].includes(req.path)) {
       if (req.method !== (req.path === "/status" ? "GET" : "POST")) return res.json({ error: "Method not allowed" }, 405);

@@ -116,7 +116,10 @@ Browser QA cleanup removed its one disposable account and two remaining notes;
 attachment records were already removed by the tested deletion flows. The
 account lookup returned zero afterward. Pre-existing users were preserved.
 
-## SMS Inbox acceptance — 2026-10-06
+## Phase 1 SMS Inbox snapshot — 2026-10-06
+
+This historical snapshot is superseded by the conversational assistant
+acceptance below. Its transport and connection evidence remains relevant.
 
 Phase 1 is implemented and deployed using TablesDB, an Appwrite Function,
 the existing Twilio Messaging provider, owned user targets, and Realtime.
@@ -192,3 +195,71 @@ Its attachment count was zero. All scoped-verifier fixtures were removed.
 The real user's account, connection, owner-only note, and acceptance receipts
 were re-read and preserved after cleanup. No phone numbers, connection codes,
 note bodies, or credentials are included in this report.
+
+## Conversational SMS assistant acceptance — 2026-10-06
+
+The additive schema and assistant are deployed. The active Function deployment
+is `6ac53237be422231bc21`, with a ready remote TypeScript build. The active Site
+deployment is `6ac52c8c6b5abeaccdd3`. The Function uses
+`openai/gpt-5.6-luna` through OpenRouter and AI SDK 7. Its OpenRouter key is a
+secret Function variable; no key is included in source, configuration or archives.
+The shared Twilio/Vapi routing and existing Function scopes are preserved.
+
+Local lint, type checking, Function build, Next.js production build and
+`git diff --check` passed. The regular suite passed **48 tests**, with the one
+paid evaluation test skipped. Tests cover actual SDK tool loops, follow-up edits,
+search/deletion, ambiguous deletion, note/reminder ownership, separate event and
+notification times, time-only corrections preserving dates, IANA/DST conversion,
+partial inference rollback, duplicates, lost responses, revocation, native
+scheduling races and web note cancellation. Regular tests make no paid requests.
+
+The opt-in evaluation passed a **13-turn real Luna corpus** against isolated
+in-memory persistence and Messaging. It exercises Shiplog create/edit/read/delete,
+work time/offset corrections and cancellation, tomorrow morning/time correction,
+preservation of tomorrow during a work-time correction, and ambiguous deletion.
+Earlier evaluation failures exposed ambiguous deletion and date-drift risks;
+server-side guards now enforce those boundaries. Malformed tool calls abort the
+entire turn and use durable retries rather than committing a partial plan.
+
+All **8 live Cloud SMS checks** passed using an ephemeral key with exactly the
+Function scopes. Messages were drafts and production workers ignored fixture
+jobs. The additional reminder check verifies owner-only reads, forbidden client
+writes/foreign reads and cancellation through a real fenced transaction. All
+**35 Appwrite permission/attachment checks** also passed after schema evolution.
+Fixtures were cleaned without modifying pre-existing accounts or connections.
+
+Deployed signed callback simulation completed a Shiplog-style
+create → edit → retrieve → delete cycle on the same note. A subsequent combined
+reminder corpus was interrupted by genuine handset turns changing the active
+conversation, so that combined run is not claimed as passing. The replacement
+proactive-only check used a uniquely marked disposable note and passed:
+
+- Accepted callback: `SM35b49e50024dac3b302fed1b5c066fe2`.
+- Durable reminder: `r_098b0f5b506231dbca95f22fc992b005`.
+- Native scheduled message: `m_becc00d4683660a55734689e81b2bf0a`, scheduled
+  for **2026-10-06 at 17:25:00 UTC**, subsequently Appwrite `sent`.
+- Twilio message `SM62b427525e98f695d6e61924c39508b8` reported **delivered**,
+  with no carrier error. Actual handset observation of this reminder is separate.
+
+Twilio records also confirm three genuine phone-originated assistant turns:
+`SM31c0af4508dd7fbbd17706fe86c02269`,
+`SM9b4f820aed24cabb249bfd78b569abf9`, and
+`SM603e369a2576ed87bf42fb118b880732`. Their jobs completed and replies queued.
+This is distinct from administrative callback simulation.
+
+The successful proactive fixture note was removed; its durable receipt/turn and
+sent reminder tombstone remain. The earlier QA reminder was canceled to avoid
+an unintended later test notification. The user's edited QA work note and open
+editor were preserved. Cleanup inspected known fixture IDs rather than replaying
+uncertain mutations.
+
+The deployed SMS settings page was inspected at 1280x800 and 390x844 in a separate
+collaborative tab. It displays the assistant behavior, configured
+`America/Chicago` timezone, 15-minute default offset and AI privacy disclosure.
+At mobile width 390, page scroll width was 383: no horizontal overflow. The
+user's existing dashboard/editor tab was not changed by this check.
+
+TablesDB reminder intent is atomic; native Messaging synchronization is a durable
+reconciliation saga. A message already processing at the carrier cannot be
+recalled. Provider delivery evidence does not prove physical-device rendering.
+See [SMS.md](SMS.md) for lifecycle, deployment and operational details.
