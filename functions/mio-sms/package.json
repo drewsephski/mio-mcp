@@ -7,6 +7,9 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@js-temporal/polyfill": "^0.5.1",
+    "@openrouter/ai-sdk-provider": "^3.1.0",
+    "ai": "^7.0.128",
     "node-appwrite": "^26.2.0",
     "twilio": "^5.13.0",
     "zod": "^4.6.5"

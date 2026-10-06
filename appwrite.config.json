@@ -117,6 +117,20 @@
           "array": false,
           "default": "web",
           "size": 16
+        },
+        {
+          "key": "completed",
+          "type": "boolean",
+          "required": false,
+          "array": false,
+          "default": false
+        },
+        {
+          "key": "project",
+          "type": "varchar",
+          "required": false,
+          "array": false,
+          "size": 128
         }
       ],
       "indexes": [
@@ -137,6 +151,16 @@
           "type": "fulltext",
           "columns": [
             "title"
+          ],
+          "orders": [
+            "ASC"
+          ]
+        },
+        {
+          "key": "body_search",
+          "type": "fulltext",
+          "columns": [
+            "body"
           ],
           "orders": [
             "ASC"
@@ -340,6 +364,21 @@
           "required": false,
           "array": false,
           "default": false
+        },
+        {
+          "key": "reminderIds",
+          "type": "varchar",
+          "required": false,
+          "array": true,
+          "size": 36
+        },
+        {
+          "key": "deliveryMode",
+          "type": "varchar",
+          "required": false,
+          "array": false,
+          "size": 16,
+          "default": "live"
         }
       ],
       "indexes": [
@@ -348,6 +387,320 @@
           "type": "key",
           "columns": [
             "replyQueued"
+          ],
+          "orders": [
+            "ASC"
+          ]
+        }
+      ]
+    },
+    {
+      "$id": "sms_jobs",
+      "$permissions": [],
+      "databaseId": "mio",
+      "name": "SMS jobs",
+      "enabled": true,
+      "rowSecurity": true,
+      "columns": [
+        {
+          "key": "ownerId",
+          "type": "varchar",
+          "required": true,
+          "array": false,
+          "size": 36
+        },
+        {
+          "key": "phone",
+          "type": "varchar",
+          "required": true,
+          "array": false,
+          "size": 16
+        },
+        {
+          "key": "targetId",
+          "type": "varchar",
+          "required": true,
+          "array": false,
+          "size": 36
+        },
+        {
+          "key": "payloadHash",
+          "type": "varchar",
+          "required": true,
+          "array": false,
+          "size": 64
+        },
+        {
+          "key": "body",
+          "type": "varchar",
+          "required": true,
+          "array": false,
+          "size": 1600
+        },
+        {
+          "key": "status",
+          "type": "varchar",
+          "required": true,
+          "array": false,
+          "size": 16
+        },
+        {
+          "key": "attempts",
+          "type": "integer",
+          "required": true,
+          "array": false
+        },
+        {
+          "key": "nextAttemptAt",
+          "type": "datetime",
+          "required": true,
+          "array": false
+        }
+      ],
+      "indexes": [
+        {
+          "key": "job_pending",
+          "type": "key",
+          "columns": [
+            "status",
+            "nextAttemptAt"
+          ],
+          "orders": [
+            "ASC",
+            "ASC"
+          ]
+        },
+        {
+          "key": "job_owner",
+          "type": "key",
+          "columns": [
+            "ownerId",
+            "status"
+          ],
+          "orders": [
+            "ASC",
+            "ASC"
+          ]
+        }
+      ]
+    },
+    {
+      "$id": "sms_conversations",
+      "$permissions": [],
+      "databaseId": "mio",
+      "name": "SMS conversations",
+      "enabled": true,
+      "rowSecurity": true,
+      "columns": [
+        {
+          "key": "ownerId",
+          "type": "varchar",
+          "required": true,
+          "array": false,
+          "size": 36
+        },
+        {
+          "key": "timezone",
+          "type": "varchar",
+          "required": true,
+          "array": false,
+          "size": 64
+        },
+        {
+          "key": "defaultOffsetMinutes",
+          "type": "integer",
+          "required": true,
+          "array": false
+        },
+        {
+          "key": "leaseToken",
+          "type": "varchar",
+          "required": true,
+          "array": false,
+          "size": 36
+        },
+        {
+          "key": "leaseUntil",
+          "type": "datetime",
+          "required": true,
+          "array": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "$id": "sms_turns",
+      "$permissions": [],
+      "databaseId": "mio",
+      "name": "SMS turns",
+      "enabled": true,
+      "rowSecurity": true,
+      "columns": [
+        {
+          "key": "ownerId",
+          "type": "varchar",
+          "required": true,
+          "array": false,
+          "size": 36
+        },
+        {
+          "key": "userText",
+          "type": "varchar",
+          "required": true,
+          "array": false,
+          "size": 1600
+        },
+        {
+          "key": "reply",
+          "type": "varchar",
+          "required": true,
+          "array": false,
+          "size": 700
+        },
+        {
+          "key": "noteIds",
+          "type": "varchar",
+          "required": true,
+          "array": true,
+          "size": 36
+        },
+        {
+          "key": "reminderIds",
+          "type": "varchar",
+          "required": true,
+          "array": true,
+          "size": 36
+        }
+      ],
+      "indexes": [
+        {
+          "key": "turn_owner",
+          "type": "key",
+          "columns": [
+            "ownerId"
+          ],
+          "orders": [
+            "ASC"
+          ]
+        }
+      ]
+    },
+    {
+      "$id": "reminders",
+      "$permissions": [],
+      "databaseId": "mio",
+      "name": "Reminders",
+      "enabled": true,
+      "rowSecurity": true,
+      "columns": [
+        {
+          "key": "ownerId",
+          "type": "varchar",
+          "required": true,
+          "array": false,
+          "size": 36
+        },
+        {
+          "key": "noteId",
+          "type": "varchar",
+          "required": false,
+          "array": false,
+          "size": 36
+        },
+        {
+          "key": "eventAt",
+          "type": "datetime",
+          "required": true,
+          "array": false
+        },
+        {
+          "key": "remindAt",
+          "type": "datetime",
+          "required": true,
+          "array": false
+        },
+        {
+          "key": "timezone",
+          "type": "varchar",
+          "required": true,
+          "array": false,
+          "size": 64
+        },
+        {
+          "key": "message",
+          "type": "varchar",
+          "required": true,
+          "array": false,
+          "size": 500
+        },
+        {
+          "key": "status",
+          "type": "varchar",
+          "required": true,
+          "array": false,
+          "size": 16
+        },
+        {
+          "key": "revision",
+          "type": "integer",
+          "required": true,
+          "array": false
+        },
+        {
+          "key": "messageId",
+          "type": "varchar",
+          "required": true,
+          "array": false,
+          "size": 36
+        },
+        {
+          "key": "appliedMessageId",
+          "type": "varchar",
+          "required": true,
+          "array": false,
+          "size": 36
+        },
+        {
+          "key": "targetId",
+          "type": "varchar",
+          "required": true,
+          "array": false,
+          "size": 36
+        },
+        {
+          "key": "syncPending",
+          "type": "boolean",
+          "required": true,
+          "array": false
+        },
+        {
+          "key": "lastError",
+          "type": "varchar",
+          "required": true,
+          "array": false,
+          "size": 32
+        }
+      ],
+      "indexes": [
+        {
+          "key": "reminder_owner",
+          "type": "key",
+          "columns": [
+            "ownerId",
+            "status",
+            "remindAt"
+          ],
+          "orders": [
+            "ASC",
+            "ASC",
+            "ASC"
+          ]
+        },
+        {
+          "key": "reminder_sync",
+          "type": "key",
+          "columns": [
+            "syncPending"
           ],
           "orders": [
             "ASC"
@@ -383,7 +736,7 @@
   "functions": [
     {
       "$id": "mio-sms",
-      "name": "Mio SMS Inbox",
+      "name": "Mio SMS Assistant",
       "runtime": "node-22",
       "execute": [
         "any"
@@ -392,9 +745,13 @@
       "logging": true,
       "entrypoint": "dist/main.js",
       "commands": "corepack pnpm install --frozen-lockfile && corepack pnpm build",
-      "events": [],
-      "schedule": "*/5 * * * *",
-      "timeout": 15,
+      "events": [
+        "tablesdb.mio.tables.sms_jobs.rows.*.create",
+        "tablesdb.mio.tables.notes.rows.*.update",
+        "tablesdb.mio.tables.notes.rows.*.delete"
+      ],
+      "schedule": "* * * * *",
+      "timeout": 120,
       "scopes": [
         "rows.read",
         "rows.write",

@@ -28,7 +28,7 @@ export async function getNotesService() {
       return { rows: result.rows.map(toNote), total: result.total };
     },
     async getNote(rowId) { return toNote(await tables.getRow<NoteRow>({ ...notes, rowId })); },
-    async createNote(rowId, data, permissions) { return toNote(await tables.createRow<NoteRow>({ ...notes, rowId, data: { ...data, source: "web" }, permissions })); },
+    async createNote(rowId, data, permissions) { return toNote(await tables.createRow<NoteRow>({ ...notes, rowId, data: { ...data, source: "web", completed: false, project: "" }, permissions })); },
     async updateNote(rowId, data) { return toNote(await tables.updateRow<NoteRow>({ ...notes, rowId, data })); },
     async deleteNote(rowId) { await tables.deleteRow({ ...notes, rowId }); },
     async listAttachments(queries) {

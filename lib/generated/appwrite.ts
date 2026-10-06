@@ -9,6 +9,8 @@ export type Notes = Models.Row & {
     body: string;
     archived: boolean;
     source: string;
+    completed: boolean;
+    project: string;
 }
 
 export type Attachments = Models.Row & {
@@ -38,4 +40,49 @@ export type SmsReceipts = Models.Row & {
     payloadHash: string;
     reply: string;
     replyQueued: boolean;
+    reminderIds: string[];
+    deliveryMode: string;
+}
+
+export type SmsJobs = Models.Row & {
+    ownerId: string;
+    phone: string;
+    targetId: string;
+    payloadHash: string;
+    body: string;
+    status: string;
+    attempts: number;
+    nextAttemptAt: string;
+}
+
+export type SmsConversations = Models.Row & {
+    ownerId: string;
+    timezone: string;
+    defaultOffsetMinutes: number;
+    leaseToken: string;
+    leaseUntil: string;
+}
+
+export type SmsTurns = Models.Row & {
+    ownerId: string;
+    userText: string;
+    reply: string;
+    noteIds: string[];
+    reminderIds: string[];
+}
+
+export type Reminders = Models.Row & {
+    ownerId: string;
+    noteId: string;
+    eventAt: string;
+    remindAt: string;
+    timezone: string;
+    message: string;
+    status: string;
+    revision: number;
+    messageId: string;
+    appliedMessageId: string;
+    targetId: string;
+    syncPending: boolean;
+    lastError: string;
 }
