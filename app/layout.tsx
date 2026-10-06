@@ -17,8 +17,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: { default: "Mio — A little room for your thoughts", template: "%s · Mio" },
-  description: "A private workspace for your notes, ideas, and the files that belong with them.",
+  title: { default: "Mio — Your notes have a phone number", template: "%s · Mio" },
+  description: "Text a thought to Mio. Capture private notes by SMS and keep them close in your workspace.",
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {

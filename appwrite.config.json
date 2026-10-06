@@ -109,6 +109,14 @@
           "required": false,
           "array": false,
           "default": false
+        },
+        {
+          "key": "source",
+          "type": "varchar",
+          "required": false,
+          "array": false,
+          "default": "web",
+          "size": 16
         }
       ],
       "indexes": [
@@ -204,6 +212,148 @@
           ]
         }
       ]
+    },
+    {
+      "$id": "sms_connections",
+      "$permissions": [],
+      "databaseId": "mio",
+      "name": "SMS connections",
+      "enabled": true,
+      "rowSecurity": true,
+      "columns": [
+        {
+          "key": "ownerId",
+          "type": "varchar",
+          "required": true,
+          "array": false,
+          "size": 36
+        },
+        {
+          "key": "phone",
+          "type": "varchar",
+          "required": true,
+          "array": false,
+          "size": 16
+        },
+        {
+          "key": "targetId",
+          "type": "varchar",
+          "required": true,
+          "array": false,
+          "size": 36
+        }
+      ],
+      "indexes": [
+        {
+          "key": "phone_unique",
+          "type": "unique",
+          "columns": [
+            "phone"
+          ],
+          "orders": [
+            "ASC"
+          ]
+        }
+      ]
+    },
+    {
+      "$id": "sms_challenges",
+      "$permissions": [],
+      "databaseId": "mio",
+      "name": "SMS challenges",
+      "enabled": true,
+      "rowSecurity": true,
+      "columns": [
+        {
+          "key": "tokenHash",
+          "type": "varchar",
+          "required": true,
+          "array": false,
+          "size": 64
+        },
+        {
+          "key": "expiresAt",
+          "type": "datetime",
+          "required": true,
+          "array": false
+        }
+      ],
+      "indexes": [
+        {
+          "key": "token_unique",
+          "type": "unique",
+          "columns": [
+            "tokenHash"
+          ],
+          "orders": [
+            "ASC"
+          ]
+        }
+      ]
+    },
+    {
+      "$id": "sms_receipts",
+      "$permissions": [],
+      "databaseId": "mio",
+      "name": "SMS receipts",
+      "enabled": true,
+      "rowSecurity": true,
+      "columns": [
+        {
+          "key": "ownerId",
+          "type": "varchar",
+          "required": true,
+          "array": false,
+          "size": 36
+        },
+        {
+          "key": "phone",
+          "type": "varchar",
+          "required": true,
+          "array": false,
+          "size": 16
+        },
+        {
+          "key": "targetId",
+          "type": "varchar",
+          "required": true,
+          "array": false,
+          "size": 36
+        },
+        {
+          "key": "payloadHash",
+          "type": "varchar",
+          "required": true,
+          "array": false,
+          "size": 64
+        },
+        {
+          "key": "reply",
+          "type": "varchar",
+          "required": true,
+          "array": false,
+          "size": 700
+        },
+        {
+          "key": "replyQueued",
+          "type": "boolean",
+          "required": false,
+          "array": false,
+          "default": false
+        }
+      ],
+      "indexes": [
+        {
+          "key": "reply_pending",
+          "type": "key",
+          "columns": [
+            "replyQueued"
+          ],
+          "orders": [
+            "ASC"
+          ]
+        }
+      ]
     }
   ],
   "buckets": [
@@ -228,6 +378,37 @@
       "compression": "none",
       "encryption": true,
       "antivirus": true
+    }
+  ],
+  "functions": [
+    {
+      "$id": "mio-sms",
+      "name": "Mio SMS Inbox",
+      "runtime": "node-22",
+      "execute": [
+        "any"
+      ],
+      "enabled": true,
+      "logging": true,
+      "entrypoint": "dist/main.js",
+      "commands": "corepack pnpm install --frozen-lockfile && corepack pnpm build",
+      "events": [],
+      "schedule": "*/5 * * * *",
+      "timeout": 15,
+      "scopes": [
+        "rows.read",
+        "rows.write",
+        "users.read",
+        "users.write",
+        "targets.read",
+        "targets.write",
+        "messages.read",
+        "messages.write"
+      ],
+      "buildSpecification": "s-2vcpu-2gb",
+      "runtimeSpecification": "s-0.5vcpu-512mb",
+      "deploymentRetention": 7,
+      "path": ".appwrite/function"
     }
   ]
 }

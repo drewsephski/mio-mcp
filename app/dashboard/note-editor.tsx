@@ -76,6 +76,7 @@ export function NoteEditor({ note, attachments, isNew, archivedView }: { note?: 
     {error && <p className="notice notice-error editor-feedback" role="alert">{error}</p>}
     {confirmDelete && <div className="editor-feedback delete-confirm"><span>Delete this note and its attachments?</span><button className="button button-danger" disabled={pending} onClick={remove}>Delete permanently</button><button className="button button-secondary" disabled={pending} onClick={() => setConfirmDelete(false)}>Keep note</button></div>}
     <form id="note-form" method="post" onSubmit={save} className="editor-content" aria-busy={pending} data-dirty={dirty}>
+      {note?.source === "sms" && <p className="sms-provenance">Captured by SMS</p>}
       <p className="editor-date">{note ? new Date(note.createdAt).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric", timeZone: "UTC" }) : "A new page, just for you."}</p>
       <label htmlFor="note-title" className="sr-only">Note title</label><input id="note-title" className="note-title" placeholder="Give your thought a title" required maxLength={255} value={title} onChange={event => setTitle(event.target.value)} disabled={pending} autoFocus={isNew} />
       <label htmlFor="note-body" className="sr-only">Note body</label><textarea id="note-body" className="note-body" placeholder="Start writing. There’s room for it here…" maxLength={100_000} value={body} onChange={event => setBody(event.target.value)} disabled={pending} />

@@ -4,6 +4,7 @@ export interface Note {
   title: string;
   body: string;
   archived: boolean;
+  source?: "web" | "sms";
   createdAt: string;
   updatedAt: string;
 }

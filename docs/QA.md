@@ -102,7 +102,7 @@ returned the exact `Hosted Mio file check` text. Authentication POST without
 Origin returned 403. Deployment uploads were inspected: the staged allowlist
 contains no `.env*` files.
 
-Final active deployment: `6ac5165f63287582ae0e` (remote build ready, 46 seconds).
+Pre-SMS active deployment: `6ac5165f63287582ae0e` (remote build ready, 46 seconds).
 The Site reports that deployment as active; an HTTPS request returned 200 and
 `x-appwrite-deployment-id: 6ac5165f63287582ae0e`.
 
@@ -115,3 +115,80 @@ from the note.
 Browser QA cleanup removed its one disposable account and two remaining notes;
 attachment records were already removed by the tested deletion flows. The
 account lookup returned zero afterward. Pre-existing users were preserved.
+
+## SMS Inbox acceptance — 2026-10-06
+
+Phase 1 is implemented and deployed using TablesDB, an Appwrite Function,
+the existing Twilio Messaging provider, owned user targets, and Realtime.
+Reminders, SMS retrieval, and actions are not implemented. Reminder-shaped
+texts remain notes and replies explicitly disclose that alerts are not scheduled.
+
+Local lint/typecheck, the Function build, and all **23 unit tests** passed.
+The full web build passed locally and on Appwrite Sites. The existing **35 live
+Appwrite permission/attachment checks** passed after the additive SMS schema
+changes. `git diff --check` passed.
+
+The SMS verifier passed **7 live Cloud checks** with a short-lived API key
+matching the deployed Function scopes. All verifier messages were drafts.
+Checks cover code rotation, existing target ownership, private/server-controlled
+rows, concurrent duplicate capture, lost commit/reply responses, replay after
+note deletion, changed payload rejection, and disconnect cancellation.
+Another user's existing SMS target is never reassigned or used for a reply.
+
+A disposable hosted browser account verified automatic connection status and
+note-list updates, SMS provenance, and preservation of unsaved editor text.
+The settings/dashboard were checked at 390x844 without horizontal page
+overflow. A subsequent Site deployment made that already-open QA tab's old
+Server Action requests return 404; the tab displayed its recovery message.
+This is separate from the real user's final-deployment acceptance below.
+
+Genuine phone-originated acceptance used the user's confirmed phone ending
+1711 and the shared Mio/Vapi number ending 6565:
+
+- The first two connection attempts reached Twilio but returned Function 401:
+  `users.write` was missing. The live scope configuration was corrected, and
+  the verifier now exercises the exact Function scopes rather than using
+  provisioning permissions for workflow operations.
+- A temporary outbound QA target also reserved the real phone identifier.
+  That target was removed after delivery. Target conflicts now reuse only a
+  matching target already owned by the verified account; another owner's
+  target produces a clear connection failure without binding or sending.
+- An administrative recovery code was replaced before it was delivered.
+  The rejected inbound request returned 200 with a real Twilio SMS explanation.
+  The next recovery code was checked against the active challenge before
+  sending. Temporary recovery targets were removed after delivery.
+- Inbound `SM15b8e5b5435c6bef75927cec3ddde87a` connected the user's phone on
+  **2026-10-06 at 16:27:44 UTC**. The Function returned 200 and persisted an
+  owner-readable connection and server-only receipt. Appwrite Messaging
+  reported `sent`, delivered total 1, with no delivery errors. Twilio reply
+  `SM67c2b37f789ec51006c6604fb15e624a` reported **delivered**.
+- Inbound `SM8d0c9aa04668f813118b133afaad20af` captured the user's next text
+  at **16:28:14 UTC**, with original body, `source=sms`, and read/update/delete
+  permission only for that user. The receipt was queued once. Appwrite reported
+  `sent`, delivered total 1, with no errors; Twilio confirmation
+  `SM0b0c6fbe398845b2209661cae2490c91` reported **delivered**.
+- The user confirmed **“its working”** and that the note appeared in their
+  open Inbox **automatically, without refreshing**. This is user-reported
+  real-device/UI acceptance, distinct from the synthetic browser check.
+
+The shared number's voice URL and status callback remain Vapi's original
+values; only SMS routing changed. Unconnected senders are forwarded to the
+original Vapi SMS endpoint with a recomputed Twilio signature. A genuine
+unconnected-sender Vapi SMS conversation and a physical voice call were not
+tested; preservation of their configuration is verified.
+
+Backend authorization failures on inbound callbacks now return retryable
+503 responses. A regression test verifies that invalid signatures still
+return 403 and invalid settings sessions return 401.
+
+Final Site deployment: `6ac51d8b70517f8a74ff`; HTTPS returned 200 with that
+exact `x-appwrite-deployment-id`. Final Function deployment:
+`6ac5223de5bf7d7b0fc4` (remote build ready and active at 16:31:30 UTC), including
+target-conflict handling and reminder disclosure.
+
+Cleanup removed only the disposable SMS browser user's two notes, two receipts,
+connection, draft replies, readiness message, targets, sessions, and account.
+Its attachment count was zero. All scoped-verifier fixtures were removed.
+The real user's account, connection, owner-only note, and acceptance receipts
+were re-read and preserved after cleanup. No phone numbers, connection codes,
+note bodies, or credentials are included in this report.

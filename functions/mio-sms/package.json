@@ -1,0 +1,20 @@
+{
+  "name": "mio-sms",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "node-appwrite": "^26.2.0",
+    "twilio": "^5.13.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "appwrite": "^25.2.0",
+    "typescript": "^5"
+  },
+  "packageManager": "pnpm@10.33.2"
+}
