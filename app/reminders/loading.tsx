@@ -1,1 +1,5 @@
-export default function Loading() { return <main className="auth-shell"><p role="status" className="muted">Checking your reminders…</p></main>; }
+import { PageLoading } from "@/app/components/page-loading";
+
+export default function Loading() {
+  return <PageLoading message="Checking your reminders…" />;
+}

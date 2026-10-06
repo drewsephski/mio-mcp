@@ -1,6 +1,12 @@
 packages:
   - "."
   - "functions/mio-sms"
+  - "apps/*"
+  - "packages/*"
 ignoredBuiltDependencies:
   - sharp
   - unrs-resolver
+
+# Keep the native SDK on Expo's supported file-system implementation.
+overrides:
+  react-native-appwrite>expo-file-system: ~57.0.0

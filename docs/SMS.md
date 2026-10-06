@@ -143,30 +143,11 @@ Never log phone numbers, bodies, note content, prompts, API keys or credentials.
 
 ## Deploy and verify
 
-Use pnpm and the existing Appwrite project configuration:
-
-```sh
-pnpm appwrite:generate
-pnpm lint
-pnpm typecheck
-pnpm test
-pnpm sms:build
-pnpm build
-appwrite push table --all --force
-pnpm sms:configure-ai
-pnpm sms:configure-beta -- --apply
-pnpm sms:deploy
-pnpm sms:verify
-pnpm appwrite:verify
-```
-
-`pnpm sms:configure-ai` reads ignored `.env.local`/`.env.provisioning` and securely
-upserts the OpenRouter key as a **secret Function variable**, plus the model,
-timezone and default offset. It preserves all other variables. The key is not
-included in `appwrite.config.json`, the deployment archive, the Site, or logs.
-The provisioning key needs function-variable read/write access. Deploy without
-`--with-variables`; replacing the full variable set could erase Twilio secrets.
-The source preparation script uses an allowlist and an isolated frozen lockfile.
+Use the coordinated release and readiness commands in [OPERATIONS.md](OPERATIONS.md#beta-release).
+`pnpm release:beta` converges schema, regenerates types, preserves named provider
+secrets and verifies Function before deploying Site. Standalone beta-variable
+configuration is retired. `sms:configure-ai` is an explicit credential-rotation
+helper, not a deployment workflow; verify readiness after rotating a key.
 
 Regular tests use the AI SDK mock model and never pay for inference. They cover
 multi-turn actions, durable scheduling, ambiguity, owner isolation, concurrent

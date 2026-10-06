@@ -1,3 +1,4 @@
+import { CompanionVisit } from "./companion-visit";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { CalendarDays, FileText, Bell, History, Settings, LockKeyhole } from "lucide-react";
@@ -14,17 +15,36 @@ const destinations = [
   { key: "settings", href: "/settings", label: "Settings", icon: Settings },
 ] as const;
 export type ProductSection = typeof destinations[number]["key"];
+type ProductUser = { $id: string; name: string; email: string };
 
-export function ProductNavigation({ active, className = "product-nav" }: { active: ProductSection; className?: string }) {
-  return <nav className={className} aria-label="Main navigation">{destinations.map(({ key, href, label, icon: Icon }) => <Link key={key} href={href} className={active === key ? "active" : undefined} aria-current={active === key ? "page" : undefined}><Icon size={17} aria-hidden="true" /><span>{label}</span></Link>)}</nav>;
+function ProductNavigation({ active }: { active: ProductSection }) {
+  return <nav className="product-nav" aria-label="Main navigation">{destinations.map(({ key, href, label, icon: Icon }) => <Link key={key} href={href} title={label} aria-label={label} className={active === key ? "active" : undefined} aria-current={active === key ? "page" : undefined}><Icon size={17} aria-hidden="true" /><span>{label}</span></Link>)}</nav>;
+}
+
+export function ProductSidebar({ active, user }: { active: ProductSection; user: ProductUser }) {
+  return <aside className="product-sidebar" aria-label="Workspace navigation">
+    <Brand href="/today" />
+    <ProductNavigation active={active} />
+    <div className="product-sidebar-bottom">
+      <p className="product-private"><LockKeyhole size={13} aria-hidden="true" />Your private assistant</p>
+      <div className="account-summary"><span className="avatar" aria-hidden="true">{(user.name || user.email).slice(0, 1).toUpperCase()}</span><div><strong>{user.name || "Your account"}</strong><small>{user.email}</small></div><SignOutButton /></div>
+    </div>
+  </aside>;
+}
+
+export function ProductMobileNavigation({ active }: { active: ProductSection }) {
+  return <>
+    <div className="product-mobile-brand"><Brand href="/today" /><SignOutButton /></div>
+    <div className="product-mobile-nav"><ProductNavigation active={active} /></div>
+  </>;
 }
 
 export function ProductShell({ active, title, description, user, actions, children }: {
-  active: ProductSection; title: string; description?: string; user: { $id: string; name: string; email: string }; actions?: ReactNode; children: ReactNode;
+  active: ProductSection; title: string; description?: string; user: ProductUser; actions?: ReactNode; children: ReactNode;
 }) {
-  return <div className="product-shell">
+  return <div className="product-shell"><CompanionVisit />
     <a href="#product-main" className="skip-link">Skip to content</a>
-    <aside className="product-sidebar"><Brand href="/today" /><ProductNavigation active={active} /><div className="product-sidebar-bottom"><p className="product-private"><LockKeyhole size={13} aria-hidden="true" />Your private assistant</p><div className="account-summary"><span className="avatar">{(user.name || user.email).slice(0, 1).toUpperCase()}</span><div><strong>{user.name || "Your account"}</strong><small>{user.email}</small></div><SignOutButton /></div></div></aside>
-    <div className="product-main"><div className="product-mobile-brand"><Brand href="/today" /><SignOutButton /></div><div className="product-mobile-nav"><ProductNavigation active={active} /></div><header className="product-header"><div><h1>{title}</h1>{description && <p>{description}</p>}</div>{actions && <div className="product-header-actions">{actions}</div>}</header><main id="product-main" className="product-content"><ProductLiveRefresh ownerId={user.$id} databaseId={getResourceIds().databaseId} section={active} />{children}</main></div>
+    <ProductSidebar active={active} user={user} />
+    <div className="product-main"><ProductMobileNavigation active={active} /><header className="product-header"><div><h1>{title}</h1>{description && <p>{description}</p>}</div>{actions && <div className="product-header-actions">{actions}</div>}</header><main id="product-main" className="product-content"><ProductLiveRefresh ownerId={user.$id} databaseId={getResourceIds().databaseId} section={active} />{children}</main></div>
   </div>;
 }

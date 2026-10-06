@@ -1,0 +1,18 @@
+{
+  "expo": {
+    "name": "Mio",
+    "slug": "mio-companion",
+    "scheme": "mio",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "bundleIdentifier": "com.mio.companion",
+      "supportsTablet": true,
+      "usesAppleSignIn": true
+    },
+    "plugins": [
+      "expo-apple-authentication"
+    ]
+  }
+}

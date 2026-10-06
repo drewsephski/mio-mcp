@@ -1,0 +1,40 @@
+name: Mio checks
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: mio-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  deterministic:
+    name: Lint, types, tests and production builds
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NEXT_PUBLIC_APPWRITE_ENDPOINT: https://nyc.cloud.appwrite.io/v1
+      NEXT_PUBLIC_APPWRITE_PROJECT_ID: 68d13a4a000d854004b3
+      APP_URL: http://localhost:3000
+      # Build-only placeholder. CI never makes authenticated provider requests.
+      APPWRITE_API_KEY: ci-build-placeholder
+      MIO_LIVE_EVAL: "0"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm prepare:release
+      - run: pnpm check:config
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm sms:build
+      - run: pnpm build
+      - run: pnpm mobile:typecheck
+      - run: pnpm mobile:export
+      - run: git diff --check

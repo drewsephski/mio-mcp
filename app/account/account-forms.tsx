@@ -56,7 +56,7 @@ export function AuthFlowForm(props: AuthFlowFormProps) {
     return (
       <div className="form-stack">
         <p className="notice notice-error" role="alert">This link is incomplete. Open the full link from your email, or request a new one.</p>
-        <Link className="button button-primary" href={props.mode === "reset" ? "/auth/forgot-password" : "/auth"}>Request a new link</Link>
+        <Link className="button button-primary" href={props.mode === "reset" ? "/auth/forgot-password" : "/onboarding"}>{props.mode === "reset" ? "Request a reset link" : "Open email verification"}</Link>
       </div>
     );
   }

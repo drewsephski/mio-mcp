@@ -1,0 +1,7 @@
+import { notFound } from "next/navigation";
+import { requireOperator } from "@/lib/operations";
+import Link from "next/link";
+export default async function DefinitionsPage() {
+  try { await requireOperator(); } catch { notFound(); }
+  return <main className="product-content operator-page operator-definitions"><Link href="/operator" className="text-link">Back to beta health</Link><h1>Metric definitions</h1><section><h2>Windows and activation</h2><p>All windows use UTC. Seven days means today plus six prior calendar days. Active days count durable SMS turns, including terminal failures. Activation means a connected user has a successful committed turn after their current connection date. First successful reminder means Appwrite reports sent; handset delivery is separate evidence.</p></section><section><h2>Outcomes and failures</h2><p>Clarification counts turns with committed clarification metadata, divided by turns with known outcomes. Failed turn rate uses failed jobs divided by completed or failed jobs created in the window. Reminder scheduling failures count currently failed reminders created in the window divided by all reminders created in the window. Historical outcomes remain unknown.</p></section><section><h2>Usage and visits</h2><p>Reservations include failed or ambiguous provider attempts. Visitors count distinct admitted users with a first-party daily visit record; no content, URLs, device identifiers, or third-party tracking are collected.</p></section></main>;
+}

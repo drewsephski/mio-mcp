@@ -1,254 +1,92 @@
 ---
 name: Mio
-description: A compact private workspace for notes and their files.
+description: A private personal assistant over text, with a web companion for notes and reminders.
 colors:
   background: "#ffffff"
   foreground: "#172033"
   muted: "#627087"
-  line: "#e5eaf1"
   blue: "#2458d3"
-  blue-hover: "#1945b3"
   pale: "#f2f6ff"
+  line: "#e5eaf1"
   surface: "#f8faff"
+  blue-hover: "#1945b3"
   danger: "#b42335"
-  danger-surface: "#fff1f2"
-  field-border: "#cfd7e4"
-  field-placeholder: "#69778c"
 typography:
   display:
-    fontFamily: "Geist, sans-serif"
-    fontSize: "clamp(42px, 4.8vw, 64px)"
-    fontWeight: 580
-    lineHeight: 1.08
-    letterSpacing: "-.04em"
+    fontFamily: "Manrope, sans-serif"
+    fontSize: "clamp(44px, 4.5vw, 62px)"
+    fontWeight: 650
+    lineHeight: 1.13
+    letterSpacing: "-.055em"
   body:
     fontFamily: "Geist, sans-serif"
     fontSize: "14px"
     fontWeight: 400
-    lineHeight: 1.65
-  label:
-    fontFamily: "Geist, sans-serif"
-    fontSize: "13px"
-    fontWeight: 550
-  button:
-    fontFamily: "Geist, sans-serif"
-    fontSize: "14px"
-    fontWeight: 550
-    lineHeight: 1.2
+    lineHeight: 1.7
+  utility:
+    fontFamily: "Geist Mono, monospace"
+    fontSize: "11px"
 rounded:
-  icon-control: "6px"
-  field: "7px"
-  control: "8px"
-  container: "12px"
+  control: "9px"
+  panel: "16px"
 spacing:
-  gap-compact: "8px"
-  gap-control: "10px"
-  inset-small: "12px"
-  inset-control: "16px"
-  inset-panel: "18px"
-  inset-section: "24px"
-  inset-wide: "28px"
-components:
-  button-primary:
-    backgroundColor: "{colors.blue}"
-    textColor: "{colors.background}"
-    typography: "{typography.button}"
-    rounded: "{rounded.control}"
-    padding: "10px 16px"
-  button-primary-hover:
-    backgroundColor: "{colors.blue-hover}"
-  button-secondary:
-    backgroundColor: "{colors.background}"
-    textColor: "{colors.foreground}"
-    typography: "{typography.button}"
-    rounded: "{rounded.control}"
-    padding: "10px 16px"
-  button-quiet:
-    backgroundColor: "transparent"
-    textColor: "{colors.muted}"
-    typography: "{typography.button}"
-    rounded: "{rounded.control}"
-    padding: "10px 16px"
-  button-danger:
-    backgroundColor: "{colors.danger-surface}"
-    textColor: "{colors.danger}"
-    typography: "{typography.button}"
-    rounded: "{rounded.control}"
-    padding: "10px 16px"
-  icon-button:
-    backgroundColor: "transparent"
-    textColor: "{colors.muted}"
-    rounded: "{rounded.icon-control}"
-    width: "36px"
-    height: "36px"
-  field:
-    backgroundColor: "{colors.background}"
-    textColor: "{colors.foreground}"
-    rounded: "{rounded.field}"
-    padding: "11px 12px"
-  note-selected:
-    backgroundColor: "{colors.pale}"
-    textColor: "{colors.foreground}"
-    rounded: "{rounded.control}"
-    padding: "16px 13px"
-  auth-card:
-    backgroundColor: "{colors.background}"
-    textColor: "{colors.foreground}"
-    rounded: "{rounded.container}"
-    padding: "36px"
+  page-gutter: "clamp(20px, 3.5vw, 48px)"
+  control-gap: "8px"
+  form-gap: "22px"
+  panel-inset: "24px"
+  section-gap: "36px"
 ---
 
-# Design System: Mio
+# Mio design system
 
-## Overview
+Mio is a private assistant for people who want to capture thoughts and manage reminders through the Messages app they already use. The landing page explains that workflow and leads invited users to create an account. The companion makes saved information and exact reminder schedules easy to inspect.
 
-**Creative North Star: "A little room for your thoughts"**
+The visual direction keeps Mio’s white canvas, clear blue, three-bar wordmark, and compact navigation. The signature is the transition from a familiar text conversation into a structured note or reminder. That is the one expressive device; surrounding layouts remain quiet.
 
-Mio uses the shipped product's own phrase as its north star: a quiet, compact workspace with room for the note itself. White and cool off-white surfaces, ink text, blue actions, and Geist establish the user-pinned visual direction. The same restrained controls run through the landing page, account forms, and dashboard.
+## Palette and type
 
-Density belongs in navigation, metadata, and actions; reading and editing receive breathing room. Structure comes from thin dividers and pale selections rather than ornamental depth. Product demonstrations remain interactive semantic UI, with clear example labeling.
+The six core colors are White `#ffffff`, Ink `#172033`, Slate `#627087`, Mio blue `#2458d3`, Pale blue `#f2f6ff`, and Divider `#e5eaf1`. Cool white `#f8faff` supports navigation and secondary surfaces. Dark blue is reserved for primary-action hover. Red and green appear only in semantic feedback.
 
-**Key Characteristics:**
+Manrope gives headings a rounded, conversational voice. Geist remains the body and interface face; Geist Mono identifies onboarding progress and private connection codes. All three are self-hosted through `next/font`. Note list titles and the miniature result-card title use Geist to keep reading and navigation consistent.
 
-- Crisp white surfaces with one blue action accent.
-- Compact controls surrounding a spacious editor.
-- Geist typography and consistent outline SVG icons.
-- Thin dividers, soft corners, and flat tonal layering.
-- Brief color feedback and reduced-motion support.
+The landing headline uses a 44–62px responsive scale, 650 weight, 1.13 line height, and tight tracking. Product headings use 25–32px, section headings 19–25px, and note editor titles 28–34px. Reading text uses 14–16px, with longer legal copy at 15px/1.9 and editor text at 15px/1.95. Secondary product text is generally 12–13px. The illustrative demo uses smaller caption and metadata sizes; those are not product reading sizes.
 
-Recorded from `app/globals.css`, `app/styles/landing.css`, `app/styles/workspace.css`, `app/layout.tsx`, and representative brand, demo, account, list, and editor components. This records the completed implementation; the direction contract supplies identity context, not substitute token values.
+## Page structure
 
-## Colors
+```
+Landing:     thesis and invitation | text conversation → saved result
+             three concrete uses  | companion overview | beta invitation
+Companion:   navigation | page title + actions
+                       | content grouped by task
+Notes:       navigation | note list | spacious editor + attachments
+Settings:    navigation | section explanation | controls
+Policies:    section index | readable policy column
+```
 
-Clear blue punctuates a white and cool-neutral palette; muted text retains legibility instead of disappearing into the chrome.
+The public page frame caps at 1280px with responsive 20–48px gutters. The hero has two equal columns and stacks below 800px. Its interactive examples demonstrate saving, scheduling, and retrieval, with explicit sample labeling. Capability cards have aligned examples at the bottom; the companion overview describes the four relevant destinations.
 
-### Primary
+Product navigation uses a 216px sidebar, a 72px tablet rail, and five labeled destinations on phones. Accessible names remain present when visible labels are hidden. Today puts upcoming reminders beside recent notes on wide screens and stacks them below 1100px. Settings pairs a short section explanation with its controls; the columns stack below 800px.
 
-- **Blue:** primary actions, active navigation, text links, carets, focus outlines, and the three-bar brand mark.
-- **Blue Hover:** the darker primary-button hover treatment.
-- **Pale:** selected notes, quiet informational notices, and icon-button hover surfaces.
+The notes list uses a 300px desktop pane, narrowing to 265px and 230px before becoming a horizontal strip on phones. The editor keeps a generous reading measure and explicit save status. Long attachment names wrap, and their deletion confirmation occupies its own row. Shared product navigation also serves Notes and phone connection management.
 
-### Neutral
+Account and recovery flows share a 460px card, common header, heading scale, spacing, and footer. Onboarding keeps its genuine two-step sequence. The SMS consent disclosure and connection fallback retain their existing behavior and wording.
 
-- **Background:** the main canvas, editor, fields, and account cards.
-- **Foreground:** primary text and headings.
-- **Muted:** secondary copy, metadata, inactive controls, and editor/search placeholders.
-- **Line:** structural dividers, secondary-button borders, and search outlines.
-- **Surface:** sidebar, account-page canvas, quiet hover fills, and the closing landing panel.
-- **Field Border / Field Placeholder:** the recurring account-field stroke and placeholder treatment.
+Policy pages pair a sticky section index with a 700px reading column. The index stacks above the document on smaller screens. Every index link resolves to a real policy section. Policy wording and effective dates are preserved.
 
-Danger and its pale surface identify destructive confirmation controls; error notices use a deeper red text treatment. Success notices use pale green with dark green copy. These are semantic feedback, not additional brand accents.
+Operator pages use the same typography and spacing, bordered metric cells, and a narrower reading column for metric definitions. Their data and access rules remain independent of the visual treatment.
 
-### Named Rules
+## Controls and states
 
-**The Action Blue Rule.** Use blue for actions, selection cues, and the brand; keep reading surfaces white or cool off-white.
+Controls use 9px corners; panels use 16px. Standard buttons have a 44px minimum height, fields at least 46px, and icon controls 40px. Hover feedback is tonal, with no entrance animation or ornamental shadow. Visible blue focus outlines apply to buttons, links, fields, and disclosure summaries. Reduced motion disables transitions and smooth scrolling. Phone fields use 16px text to avoid focus zoom.
 
-**The Readable Muted Rule.** Editor and search placeholders use the shared muted text token. Do not restore the lighter editor-placeholder treatment removed during finish review.
+Reminder cards put the exact notification time above the message. Event time, notification offset, and timezone are separate labeled details. Editing, cancellation, pending synchronization, delivery errors, and ambiguous-result recovery retain their existing controls and safeguards.
 
-## Typography
+Activity presents the recorded texts as restrained conversation blocks, with real note and schedule references below. Empty states name the missing content and give a next step. Error pages share the account layout; loading screens center the brand and an announced status.
 
-**Display Font:** Geist, with sans-serif fallback.
+## Copy and assets
 
-**Body Font:** Geist, with sans-serif fallback.
+Prefer concrete actions: Create your account, Save note, Edit reminder, Save changes, Connect your phone. Headers and form modes stay in sync when switching between sign-in and sign-up. Do not invent saved data, confirmed deliveries, or capabilities in production copy.
 
-Geist is loaded through Next.js and exposed by the `--font-geist-sans` variable. Geist Mono is also loaded, but no shipped reading or control role uses it; it is not a second design-system voice.
+Mio’s wordmark is semantic text with a CSS mark. Icons are inline Lucide SVGs. The landing demo is semantic, interactive UI; nothing is sent or saved. No raster assets were introduced. The inherited favicon and its existing provenance sidecar remain unchanged.
 
-**Character:** medium-weight headings, slightly tight tracking, sentence-case controls, and small metadata. The ramp varies by task rather than following a fixed mathematical ratio.
-
-### Hierarchy
-
-- **Display:** the frontmatter display role belongs to the landing headline. At the tablet breakpoint it is (52px), and on phones (44px).
-- **Headline:** landing section headings use (34px, weight 550, line-height 1.2, tracking -.03em), with responsive (28–30px) variants; account headings use (28px, weight 600).
-- **Title:** editor titles use (32px, weight 550, line-height 1.3, tracking -.03em), reducing to (27px) below the tablet breakpoint. Workspace headers use (21px, weight 580), then (18px) on phones.
-- **Body:** ordinary paragraphs use the frontmatter body role. Landing introductory copy grows to (17px), then (15px) on phones. The note body retains (14px, line-height 1.9) for extended writing.
-- **Label:** account labels use the frontmatter label role. Navigation and note titles use (13px), while status and metadata use (10–12px). Labels remain sentence case.
-
-**The Reading Room Rule.** Keep the editor's body text and generous line-height distinct from compact metadata. The miniature landing demo's smaller illustrative text is not a reusable reading size for product content.
-
-## Layout
-
-The landing page shares a centered (1240px) maximum-width frame with (40px) horizontal padding, changing to (24px) below (800px) and (20px) below (600px). The desktop hero pairs editorial copy and the product example; below (800px) those columns stack. Detail rows become one column below (600px).
-
-The dashboard fills (100dvh) and divides into a navigation sidebar (208px), note list (310px), and flexible editor. At (1100px) the sidebar/list reduce to (175px/265px); at (800px) navigation becomes a (64px) icon rail and the list reduces to (230px). Below (600px) the sidebar disappears, header controls take over, and the note list becomes a horizontal strip above the editor. The page then scrolls vertically rather than locking to viewport height.
-
-The editor caps its content width at (880px), with desktop padding (35px 42px) that steps down on smaller screens. Account forms use a (420px) maximum card width, with (36px) internal padding and (28px) on phones. Common spacing is task-specific: small gaps between controls, larger padding around panels, and generous space before reading content. There is no enforced global base-unit grid.
-
-## Elevation & Depth
-
-The shipped UI uses no box shadows. Borders divide adjacent panels; pale fills identify hover, selection, and secondary surfaces. The landing demo has a slight desktop tilt (-1deg), removed below (800px); that is a presentation detail of the example, not a global card transform.
-
-**The Flat Surface Rule.** Use thin dividers and tonal fills to establish structure across the workspace and account surfaces.
-
-## Shapes
-
-Small rounded rectangles define controls: icon buttons use the icon-control radius; fields and navigation use the field radius; buttons, note rows, and notices use the control radius. Larger account cards and landing containers use the container radius. Borders are thin (1px). The account avatar is circular; ordinary action controls are not pills.
-
-The brand is a typographic wordmark beside three blue CSS bars. The middle bar is taller, with gently rounded ends. SVG icons retain the consistent outline grammar from Lucide rather than using Unicode glyphs.
-
-## Components
-
-### Buttons
-
-Compact, clear, and flat. The standard button has a (40px) minimum height; hero actions grow to (46px), and editor toolbar actions shrink to (32px) with smaller text.
-
-- **Primary:** blue with white text; darker blue on hover.
-- **Secondary:** white with a neutral stroke; cool surface fill on hover.
-- **Quiet:** transparent with muted text; cool surface fill and ink text on hover.
-- **Danger:** pale red with danger text for destructive confirmation.
-- **Focus:** a blue (2px) outline with (4px) offset. Background and text color transitions last (150ms). Disabled buttons use reduced opacity (.55) and a waiting cursor.
-- **Icon control:** square (36px), muted at rest, blue on pale fill when hovered, with an accessible name.
-
-### Cards / Containers
-
-White account cards and demo frames use gently rounded container corners and thin borders. The closing landing panel uses the cool surface fill. No shadow treatment is applied. Card padding follows the surface's density; the account card uses its frontmatter component token, reducing on phones.
-
-### Inputs / Fields
-
-Account fields have white fill, the field border, a field radius, and comfortable compact padding. Labels sit above them. Blue outlines communicate keyboard focus; carets are blue. Search wraps its icon and borderless input in one outlined group; focus is drawn around that group with (2px) offset.
-
-The editor uses borderless title and body fields so writing feels like the content surface itself. Placeholder colors follow the Readable Muted Rule. Error and success messages remain textual notices; disabled state is explicit on pending controls.
-
-### Navigation
-
-Desktop landing links are compact and become blue on hover; the optional detail link disappears on phones. Dashboard links pair line icons and sentence-case text, with a pale blue active fill and blue text. At tablet widths, labels yield to the icon rail. Phone navigation actions live in the header. Focus outlines remain visible for keyboard operation.
-
-### Note Rows and Editor Feedback
-
-Note rows show a title, one-line excerpt, and small date. Long list titles and excerpts truncate, while the editor preserves the full content. A selected row uses pale fill; a hover uses the surface fill. On phones, rows are (190px) wide in the horizontal list.
-
-The editor places quiet saved/unsaved/pending status beside explicit save controls. Attachments sit below a divider, with line icons, readable file links, small size metadata, and controls. Informational, verification, error, and success notices use small rounded tonal blocks.
-
-### Brand and Interactive Example
-
-The CSS three-bar mark and Geist wordmark are the shipped Mio identity. The landing example uses the same rail/list/editor grammar, with sample note buttons exposing pressed state and captions declaring that nothing is saved. Reuse the pattern as live semantic UI when demonstrating product behavior.
-
-| Shipping identity asset | Medium | Provenance |
-| --- | --- | --- |
-| Mio wordmark and three-bar mark | Semantic text and CSS in `app/components/brand.tsx` | Authored in the Mio implementation; no raster generation. |
-| Interface icons | Inline SVG from Lucide | Existing `lucide-react` dependency; no raster generation. |
-| `app/favicon.ico` | Inherited raster ICO | Next.js scaffold asset retained unchanged; origin recorded in `app/favicon.ico.json` through Impeccable's format fallback. It is not the Mio brand mark. |
-
-## Do's and Don'ts
-
-### Do:
-
-- **Do** keep blue actions and selection cues consistent across landing, account, and workspace surfaces.
-- **Do** preserve readable muted copy, visible focus outlines, and accessible names for icon actions.
-- **Do** give editor text breathing room while keeping surrounding controls compact.
-- **Do** adapt the workspace through the shipped rail and horizontal-list patterns at smaller widths.
-- **Do** keep control feedback brief and honor reduced motion by removing transitions and smooth scrolling.
-
-### Don't:
-
-- **Don't** add extra brand accent palettes, ornamental shadows, or entrance animations to this crisp-white world.
-- **Don't** use miniature demo typography as the reading style for full product content.
-- **Don't** replace the consistent outline SVG icons with glyph characters.
-- **Don't** treat a landing example's tilt or composition as a global container rule.
-
-**Not canonized:** the inherited scaffold favicon is retained asset provenance, not Mio's reusable identity; the loaded but unused mono face and one-off miniature demo values are not reusable typography tokens. No unresolved craft-floor refusal was promoted into a system rule.
-
-## Web companion extension
-
-The web beta adds Today, Notes, Reminders, Activity and Settings to the existing crisp-white, compact blue direction. A shared sidebar becomes an icon rail on tablets and five labeled controls on phones. Today pairs a quiet Mio prompt with upcoming reminders and recent memory. Reminder rows prioritize exact notification time, event time, timezone and truthful scheduling state. Activity shows the recorded conversation and available owned references; it does not infer actions or historical schedule changes that were never recorded.
-
-Connection onboarding uses two simple steps: meet the assistant, then optional explicit SMS consent and an Open Messages action. Manual connection text is inside a fallback disclosure. Realtime plus bounded polling updates pairing status; connected users can text Mio or open Today. Settings exposes future reminder time preferences, quiet hours, and owner-only UTC usage counts. Long content wraps, edit state survives realtime updates, and uncertain mutations require a refresh.
+Local verification and the distinction between public-page checks and populated fixture checks are recorded in [docs/DESIGN-QA.md](docs/DESIGN-QA.md).

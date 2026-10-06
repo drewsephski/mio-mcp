@@ -1,3 +1,4 @@
 "use client";
 import Link from "next/link";
-export default function Error({ reset }: { reset: () => void }) { return <main className="auth-shell"><section className="auth-card"><h1>Reminders couldn’t load.</h1><p>Refresh to check what Mio has scheduled.</p><div className="form-stack"><button className="button button-primary" onClick={reset}>Try again</button><Link href="/today" className="text-link">Back to Today</Link></div></section></main>; }
+import { AuthShell } from "@/app/components/auth-shell";
+export default function Error({ reset }: { reset: () => void }) { return <AuthShell title="Reminders couldn’t load." description="Refresh to check what Mio has scheduled."><div className="form-stack"><button className="button button-primary" onClick={reset}>Try again</button><Link href="/today" className="text-link">Back to Today</Link></div></AuthShell>; }

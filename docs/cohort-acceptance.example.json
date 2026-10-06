@@ -1,0 +1,214 @@
+{
+  "users": [
+    {
+      "userId": "USER_A_ID",
+      "checks": {
+        "isolation": {
+          "result": "pending",
+          "observer": "",
+          "observedAt": ""
+        },
+        "naturalConversation": {
+          "result": "pending",
+          "observer": "",
+          "observedAt": ""
+        },
+        "ambiguousReferences": {
+          "result": "pending",
+          "observer": "",
+          "observedAt": ""
+        },
+        "schedule": {
+          "result": "pending",
+          "observer": "",
+          "observedAt": ""
+        },
+        "edit": {
+          "result": "pending",
+          "observer": "",
+          "observedAt": ""
+        },
+        "cancellation": {
+          "result": "pending",
+          "observer": "",
+          "observedAt": ""
+        },
+        "nearSendRejection": {
+          "result": "pending",
+          "observer": "",
+          "observedAt": ""
+        },
+        "handsetDelivery": {
+          "result": "pending",
+          "observer": "",
+          "observedAt": ""
+        },
+        "stop": {
+          "result": "pending",
+          "observer": "",
+          "observedAt": ""
+        },
+        "reconnect": {
+          "result": "pending",
+          "observer": "",
+          "observedAt": ""
+        },
+        "quietHours": {
+          "result": "pending",
+          "observer": "",
+          "observedAt": ""
+        },
+        "timezones": {
+          "result": "pending",
+          "observer": "",
+          "observedAt": ""
+        },
+        "inboundLimit": {
+          "result": "pending",
+          "observer": "",
+          "observedAt": ""
+        },
+        "hourlyAiLimit": {
+          "result": "pending",
+          "observer": "",
+          "observedAt": ""
+        },
+        "dailyAiLimit": {
+          "result": "pending",
+          "observer": "",
+          "observedAt": ""
+        },
+        "outboundLimit": {
+          "result": "pending",
+          "observer": "",
+          "observedAt": ""
+        },
+        "activeReminderLimit": {
+          "result": "pending",
+          "observer": "",
+          "observedAt": ""
+        },
+        "globalBreaker": {
+          "result": "pending",
+          "observer": "",
+          "observedAt": ""
+        },
+        "operatorDenial": {
+          "result": "pending",
+          "observer": "",
+          "observedAt": ""
+        },
+        "emailDelivery": {
+          "result": "pending",
+          "observer": "",
+          "observedAt": ""
+        }
+      }
+    },
+    {
+      "userId": "USER_B_ID",
+      "checks": {
+        "isolation": {
+          "result": "pending",
+          "observer": "",
+          "observedAt": ""
+        },
+        "naturalConversation": {
+          "result": "pending",
+          "observer": "",
+          "observedAt": ""
+        },
+        "ambiguousReferences": {
+          "result": "pending",
+          "observer": "",
+          "observedAt": ""
+        },
+        "schedule": {
+          "result": "pending",
+          "observer": "",
+          "observedAt": ""
+        },
+        "edit": {
+          "result": "pending",
+          "observer": "",
+          "observedAt": ""
+        },
+        "cancellation": {
+          "result": "pending",
+          "observer": "",
+          "observedAt": ""
+        },
+        "nearSendRejection": {
+          "result": "pending",
+          "observer": "",
+          "observedAt": ""
+        },
+        "handsetDelivery": {
+          "result": "pending",
+          "observer": "",
+          "observedAt": ""
+        },
+        "stop": {
+          "result": "pending",
+          "observer": "",
+          "observedAt": ""
+        },
+        "reconnect": {
+          "result": "pending",
+          "observer": "",
+          "observedAt": ""
+        },
+        "quietHours": {
+          "result": "pending",
+          "observer": "",
+          "observedAt": ""
+        },
+        "timezones": {
+          "result": "pending",
+          "observer": "",
+          "observedAt": ""
+        },
+        "inboundLimit": {
+          "result": "pending",
+          "observer": "",
+          "observedAt": ""
+        },
+        "hourlyAiLimit": {
+          "result": "pending",
+          "observer": "",
+          "observedAt": ""
+        },
+        "dailyAiLimit": {
+          "result": "pending",
+          "observer": "",
+          "observedAt": ""
+        },
+        "outboundLimit": {
+          "result": "pending",
+          "observer": "",
+          "observedAt": ""
+        },
+        "activeReminderLimit": {
+          "result": "pending",
+          "observer": "",
+          "observedAt": ""
+        },
+        "globalBreaker": {
+          "result": "pending",
+          "observer": "",
+          "observedAt": ""
+        },
+        "operatorDenial": {
+          "result": "pending",
+          "observer": "",
+          "observedAt": ""
+        },
+        "emailDelivery": {
+          "result": "pending",
+          "observer": "",
+          "observedAt": ""
+        }
+      }
+    }
+  ]
+}

@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 export function AuthPanel({ initialMode = "sign-in" }: { initialMode?: "sign-in" | "sign-up" }) {
   const { user, isLoading, signIn, signUp, signOut, error } = useAuth();
   const router = useRouter();
-  const [mode, setMode] = useState(initialMode);
+  const mode = initialMode;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -32,10 +32,10 @@ export function AuthPanel({ initialMode = "sign-in" }: { initialMode?: "sign-in"
         {mode === "sign-up" && <div><label className="label" htmlFor="auth-name">Your name <span className="muted">(optional)</span></label><input id="auth-name" autoComplete="name" maxLength={128} className="field" value={name} onChange={(event) => setName(event.target.value)} /></div>}
         <div><label className="label" htmlFor="auth-email">Email address</label><input id="auth-email" name="email" type="email" autoComplete="email" required maxLength={320} className="field" placeholder="you@example.com" value={email} onChange={(event) => setEmail(event.target.value)} /></div>
         <div><div className="password-label"><label htmlFor="auth-password" className="label">Password</label>{mode === "sign-in" && <Link href="/auth/forgot-password">Forgot password?</Link>}</div><input id="auth-password" name="password" type="password" autoComplete={mode === "sign-up" ? "new-password" : "current-password"} required minLength={mode === "sign-up" ? 8 : undefined} maxLength={256} className="field" value={password} onChange={(event) => setPassword(event.target.value)} />{mode === "sign-up" && <p className="muted mt-2 text-xs">Use at least 8 characters.</p>}</div>
-        <button className="button button-primary" type="submit">{pending ? "Please wait…" : mode === "sign-up" ? "Create your account" : "Sign in"}</button>
+        <button className="button button-primary" type="submit">{pending ? mode === "sign-up" ? "Creating account…" : "Signing in…" : mode === "sign-up" ? "Create your account" : "Sign in"}</button>
       </fieldset>
     </form>
     {error && <p className="notice notice-error mt-4" role="alert">{error.message}</p>}
-    <div className="auth-divider">{mode === "sign-up" ? "Already have an account? " : "Have a beta invitation? "}<button type="button" className="text-link" disabled={pending} onClick={() => { setMode(mode === "sign-up" ? "sign-in" : "sign-up"); setPassword(""); }}>{mode === "sign-up" ? "Sign in" : "Join the beta"}</button></div>
+    <div className="auth-divider">{mode === "sign-up" ? "Already have an account? " : "Have a beta invitation? "}<button type="button" className="text-link" disabled={pending} onClick={() => { setPassword(""); router.push(mode === "sign-up" ? "/auth" : "/auth?mode=sign-up"); }}>{mode === "sign-up" ? "Sign in" : "Join the beta"}</button></div>
   </>;
 }

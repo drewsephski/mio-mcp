@@ -7,6 +7,12 @@ import { createUsageControls, usageLimitsFromEnv, UsageLimitError } from "./usag
 import { optOut, parseInbound, SmsError } from "./inbound.ts";
 import { createSmsService } from "./service.ts";
 
+import { functionReadiness, validOperationsToken } from "./readiness.ts";
+import { release } from "./release.generated.ts";
+import { isOperator } from "./operator-auth.ts";
+import { operatorReport, recordVisit } from "./operator.ts";
+import { runtimeConfigurationReady } from "./runtime-configuration.ts";
+
 type Context = {
   req: { method: string; path: string; queryString: string; bodyText: string; headers: Record<string, string> };
   res: { json(data: unknown, status?: number): unknown; text(body: string, status?: number, headers?: Record<string, string>): unknown };
@@ -21,18 +27,26 @@ const schema = z.object({
   fallbackUrl: z.url().startsWith("https://").optional(),
   supportEmail: z.email().default("drewsepeczi@gmail.com"),
 });
-const accountPaths = ["/status", "/challenge", "/disconnect", "/reminders", "/activity", "/preferences", "/reminders/update", "/reminders/cancel", "/usage"];
+const accountPaths = ["/status", "/challenge", "/disconnect", "/reminders", "/activity", "/preferences", "/reminders/update", "/reminders/cancel", "/usage", "/operator", "/visit", "/admission"];
 const xml = (text: string) => text.replace(/[<>&"']/g, (char) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;", "'": "&apos;" })[char]!);
 
 export default async function main({ req, res, error, log }: Context) {
   try {
+    const operationalClient = new Client().setEndpoint(process.env.APPWRITE_FUNCTION_API_ENDPOINT!).setProject(process.env.APPWRITE_FUNCTION_PROJECT_ID!).setKey(req.headers["x-appwrite-key"]);
+    if (req.path === "/ready") {
+      if (req.method !== "GET") return res.json({ error: "Method not allowed" }, 405);
+      if (!validOperationsToken(req.headers["x-mio-operations-token"], process.env.MIO_OPERATIONS_TOKEN)) return res.json({ error: "Unauthorized" }, 401);
+      const readiness = await functionReadiness(new TablesDB(operationalClient));
+      const configurationReady = runtimeConfigurationReady(process.env);
+      return res.json({ ...readiness, configurationReady, ready: readiness.ready && configurationReady }, readiness.ready && configurationReady ? 200 : 503);
+    }
     const config = schema.parse({
       endpoint: process.env.APPWRITE_FUNCTION_API_ENDPOINT, projectId: process.env.APPWRITE_FUNCTION_PROJECT_ID,
       databaseId: process.env.APPWRITE_DATABASE_ID ?? "mio", providerId: process.env.APPWRITE_SMS_PROVIDER_ID,
       accountSid: process.env.TWILIO_ACCOUNT_SID, authToken: process.env.TWILIO_AUTH_TOKEN,
       phone: process.env.MIO_PHONE_NUMBER, webhookUrl: process.env.TWILIO_WEBHOOK_URL,
       supportEmail: process.env.MIO_SUPPORT_EMAIL || undefined,
-      fallbackUrl: process.env.MIO_NUMBER_MODE === "legacy-shared" ? process.env.TWILIO_FALLBACK_SMS_URL || undefined : undefined,
+      fallbackUrl: process.env.NODE_ENV !== "production" && process.env.MIO_NUMBER_MODE === "legacy-shared" ? process.env.TWILIO_FALLBACK_SMS_URL || undefined : undefined,
     });
     const client = new Client().setEndpoint(config.endpoint).setProject(config.projectId).setKey(req.headers["x-appwrite-key"]);
     const tables = new TablesDB(client);
@@ -60,7 +74,8 @@ export default async function main({ req, res, error, log }: Context) {
       return res.json(await service.work(job.ownerId));
     }
     if (accountPaths.includes(req.path)) {
-      const read = ["/status", "/reminders", "/activity", "/preferences", "/usage"].includes(req.path);
+      if (req.headers["x-mio-release-id"] && req.headers["x-mio-release-id"] !== release.releaseId) return res.json({ error: "Mio is being updated. Refresh in a moment." }, 409);
+      const read = ["/status", "/reminders", "/activity", "/preferences", "/usage", "/operator", "/admission"].includes(req.path);
       const allowed = req.path === "/preferences" ? ["GET", "POST"] : [read ? "GET" : "POST"];
       if (!allowed.includes(req.method)) return res.json({ error: "Method not allowed" }, 405);
       const jwt = req.headers["x-appwrite-user-jwt"];
@@ -69,6 +84,11 @@ export default async function main({ req, res, error, log }: Context) {
       const user = await new Account(userClient).get();
       if (!user.status) return res.json({ error: "Account unavailable" }, 403);
       const params = Object.fromEntries(new URLSearchParams(req.queryString));
+      if (req.path === "/operator") {
+        if (!isOperator(user, process.env.MIO_OPERATOR_USER_ID)) return res.json({ error: "Forbidden" }, 403);
+        const support = params.userId ? z.string().regex(/^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,35}$/).parse(params.userId) : undefined;
+        return res.json(await operatorReport(tables, new Users(client), invitedEmails, usage.limits, support));
+      }
       if (req.path === "/status") return res.json(await service.status(user.$id));
       if (req.path === "/disconnect") { await service.disconnect(user.$id); return res.json(await service.status(user.$id)); }
       if (!hasVerifiedBetaAccess(user, invitedEmails)) throw new SmsError("Mio is invite-only. Verify the email address on your invitation.", 403);
@@ -76,6 +96,17 @@ export default async function main({ req, res, error, log }: Context) {
       let input: unknown = {};
       if (req.method === "POST") {
         try { input = JSON.parse(req.bodyText || "{}"); } catch { throw new SmsError("Invalid request", 400); }
+      }
+      if (req.path === "/admission") {
+        const serverUsers = new Users(client);
+        const current = await serverUsers.get({ userId: user.$id });
+        if (!hasVerifiedBetaAccess(current, invitedEmails)) throw new SmsError("Verify your invited email first.", 403);
+        if (!current.labels.includes("mioBeta")) await serverUsers.updateLabels({ userId: user.$id, labels: [...current.labels, "mioBeta"] });
+        return res.json({ admitted: true });
+      }
+      if (req.path === "/visit") {
+        const visit = z.object({ surface: z.enum(["web", "mobile"]) }).strict().parse(input);
+        return res.json(await recordVisit(tables, user.$id, visit.surface));
       }
       if (req.path === "/challenge") {
         const consent = z.object({ consent: z.literal(true), consentVersion: z.literal("2026-10-06") }).strict().safeParse(input);

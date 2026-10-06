@@ -1,15 +1,22 @@
 import type { Metadata } from "next";
 import { getAppwriteHelpers } from "@/lib/appwrite";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Manrope } from "next/font/google";
 import { Providers } from "./providers";
 import "./globals.css";
 import "./styles/landing.css";
 import "./styles/workspace.css";
 import "./styles/product.css";
+import "./styles/legal.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+});
+
+const displayFont = Manrope({
+  variable: "--font-display",
+  subsets: ["latin"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
@@ -30,10 +37,9 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="en"
       data-scroll-behavior="smooth"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${displayFont.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <div hidden dangerouslySetInnerHTML={{ __html: "<!-- user-pinned-blue-code | THESIS: private notes and context together. OWN-WORLD: crisp white, compact layouts, blue accents, Geist. STORY: understand, sign up, write, attach. FIRST VIEWPORT: editorial copy beside a labeled example workspace; three-column dashboard. FORM: user-pinned, code-first. FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance -->" }} />
         <Providers session={session}>{children}</Providers>
       </body>
     </html>

@@ -74,7 +74,7 @@ async function verifyConfiguration() {
     const table = await adminTables.getTable({ databaseId, tableId });
     assert.equal(table.enabled, true);
     assert.equal(table.rowSecurity, true);
-    assert.deepEqual([...table.$permissions].sort(), [Permission.create(Role.users())]);
+    assert.deepEqual([...table.$permissions].sort(), [Permission.create(Role.label("mioBeta"))]);
     const columns = await adminTables.listColumns({ databaseId, tableId, queries: [Query.limit(100)] });
     for (const column of expected.columns) {
       const live = columns.columns.find((entry) => entry.key === column.key);
@@ -100,7 +100,7 @@ async function verifyConfiguration() {
   const liveBucket = await adminStorage.getBucket(bucket);
   assert.equal(liveBucket.enabled, true);
   assert.equal(liveBucket.fileSecurity, true);
-  assert.deepEqual(liveBucket.$permissions, [Permission.create(Role.users())]);
+  assert.deepEqual(liveBucket.$permissions, [Permission.create(Role.label("mioBeta"))]);
   const expectedBucket = config.buckets.find((entry) => entry.$id === bucketId);
   assert.ok(expectedBucket);
   for (const field of ["maximumFileSize", "allowedFileExtensions", "encryption", "antivirus", "compression"]) {
@@ -116,6 +116,8 @@ async function createIdentity(id, name) {
   const password = `${randomUUID()}Aa1!`;
   attempted.add(id);
   await users.create({ userId: id, email, password, name });
+  await users.updateEmailVerification({ userId: id, emailVerification: true });
+  await users.updateLabels({ userId: id, labels: ["mioBeta"] });
   const session = await authAccount.createEmailPasswordSession({ email, password });
   assert.ok(session.secret, "SSR authentication must return a session secret");
   const client = baseClient().setSession(session.secret);

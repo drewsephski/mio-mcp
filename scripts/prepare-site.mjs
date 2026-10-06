@@ -4,11 +4,11 @@ import { dirname, resolve } from "node:path";
 // Deploy an explicit source allowlist. Local env files and provisioning keys
 // never enter the upload, regardless of CLI archive-ignore behavior.
 const sourcePaths = [
-  "app", "lib", "public", "package.json", "pnpm-lock.yaml",
+  "app", "lib", "packages/domain/src", "packages/domain/package.json", "public", "package.json", "pnpm-lock.yaml",
   "pnpm-workspace.yaml", "next.config.ts", "postcss.config.mjs",
   "tsconfig.json", "eslint.config.mjs",
   // Shared invitation policy is dependency-free apart from the root Zod SDK.
-  "functions/mio-sms/src/beta.ts",
+  "functions/mio-sms/src", "functions/mio-sms/package.json", "functions/mio-sms/tsconfig.json",
 ];
 const destination = resolve(".appwrite/site");
 rmSync(destination, { recursive: true, force: true });
