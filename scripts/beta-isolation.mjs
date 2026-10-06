@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { Account, Client, ExecutionMethod, Functions, Permission, Role, TablesDB, Query } from "node-appwrite";
 import { releaseClient, safeFailure } from "./release/client.mjs";
+import { operatorPageDenied } from "./release/page-denial.mjs";
 const ctx = releaseClient(), ids = [randomUUID(), randomUUID()], attempted = [], fixtures = [];
 const base = () => new Client().setEndpoint(ctx.config.endpoint).setProject(ctx.config.projectId);
 async function denied(operation) { await assert.rejects(operation, e => [401,403,404].includes(e.code)); }
@@ -29,10 +30,12 @@ try {
   const site = await ctx.sites.get({ siteId: "mio-web" });
   const siteUrl = site.vars.find(x => x.key === "APP_URL").value;
   const operator = await fetch(new URL("/operator", siteUrl), { headers: { cookie: `appwrite-session-${ctx.config.projectId}=${sessions[0]}` }, redirect: "manual", signal: AbortSignal.timeout(30_000) });
-  assert.equal(operator.status, 404, "Normal user accessed operator page");
+  assert.ok(operatorPageDenied(operator.status, await operator.text()), "Normal user did not receive an operator denial boundary");
+  const support = await fetch(new URL(`/api/operator/${ids[1]}`, siteUrl), { headers: { cookie: `appwrite-session-${ctx.config.projectId}=${sessions[0]}` }, signal: AbortSignal.timeout(30_000) });
+  assert.equal(support.status, 403, "Normal user accessed operator support API");
   const unauthenticatedReady = await fetch(new URL("/api/ready", siteUrl), { signal: AbortSignal.timeout(30_000) });
   assert.equal(unauthenticatedReady.status, 401);
-  console.log("PASS normal user cannot access operator page; readiness requires its separate token");
+  console.log("PASS normal user receives operator denial boundary and support API 403; readiness requires its separate token");
   await ctx.users.updateLabels({ userId: ids[0], labels: [] });
   const blockedNoteId = randomUUID();
   fixtures.push({ databaseId: "mio", tableId: "notes", rowId: blockedNoteId, ownerId: ids[0] });

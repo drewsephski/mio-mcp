@@ -9,8 +9,10 @@ verified invited accounts and two physically different phones are required.
 `pnpm appwrite:verify` creates two disposable server-managed verified/labeled
 accounts, tests note/file permissions, then cleans up exact fixture IDs. It never
 changes real account invitations or limits and sends no email/SMS. `pnpm beta:isolation`
-adds raw permissions tests for reminders, turns, bindings, preferences, usage
-and server-controlled jobs plus a public Account signup bypass attempt. Both
+adds raw permissions tests for reminders, turns, bindings, preferences and usage,
+plus a public Account signup bypass attempt. It verifies the operator page's
+rendered denial boundary (Next.js streaming can return HTTP 200 for not-found)
+and the support API's strict HTTP 403. Both
 require `.env.local` and `.env.provisioning`; they are explicitly live checks.
 
 ## Actual two-user/phone path
