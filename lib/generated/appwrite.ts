@@ -26,15 +26,15 @@ export type SmsConnections = Models.Row & {
     ownerId: string;
     phone: string;
     targetId: string;
-    consentVersion?: string | null;
-    consentedAt?: string | null;
+    consentVersion: string;
+    consentedAt: string;
 }
 
 export type SmsChallenges = Models.Row & {
     tokenHash: string;
     expiresAt: string;
-    consentVersion?: string | null;
-    consentedAt?: string | null;
+    consentVersion: string;
+    consentedAt: string;
 }
 
 export type SmsReceipts = Models.Row & {
@@ -65,11 +65,11 @@ export type SmsConversations = Models.Row & {
     defaultOffsetMinutes: number;
     leaseToken: string;
     leaseUntil: string;
-    quietHoursStart?: string | null;
-    quietHoursEnd?: string | null;
-    smsEnabled?: boolean | null;
-    proactiveMessagesEnabled?: boolean | null;
-    dailyDigestEnabled?: boolean | null;
+    quietHoursStart: string;
+    quietHoursEnd: string;
+    smsEnabled: boolean;
+    proactiveMessagesEnabled: boolean;
+    dailyDigestEnabled: boolean;
 }
 
 export type SmsTurns = Models.Row & {
@@ -78,6 +78,7 @@ export type SmsTurns = Models.Row & {
     reply: string;
     noteIds: string[];
     reminderIds: string[];
+    outcomes: string[];
 }
 
 export type Reminders = Models.Row & {
@@ -94,4 +95,58 @@ export type Reminders = Models.Row & {
     targetId: string;
     syncPending: boolean;
     lastError: string;
+}
+
+export type DailyUsage = Models.Row & {
+    ownerId: string;
+    date: string;
+    inboundSms: number;
+    outboundSms: number;
+    aiTurns: number;
+    inputTokens: number;
+    outputTokens: number;
+    aiReservedMicros: number;
+    smsReservedMicros: number;
+}
+
+export type UsageReservationBuckets = Models.Row & {
+    bucketKey: string;
+    count: number;
+    aiReservedMicros: number;
+    smsReservedMicros: number;
+}
+
+export type UsageReservationEvents = Models.Row & {
+    ownerId: string;
+    operationHash: string;
+    kind: string;
+    date: string;
+    dailyId: string;
+    inputTokens: number;
+    outputTokens: number;
+    usageRecorded: boolean;
+}
+
+export type SchemaVersions = Models.Row & {
+    version: number;
+    digest: string;
+    appliedAt: string;
+}
+
+export type Releases = Models.Row & {
+    releaseId: string;
+    schemaVersion: number;
+    schemaDigest: string;
+    stage: string;
+    functionDeploymentId: string;
+    siteDeploymentId: string;
+    previousFunctionId: string;
+    previousSiteId: string;
+    errorCode: string;
+}
+
+export type CompanionVisits = Models.Row & {
+    ownerId: string;
+    date: string;
+    surface: string;
 }

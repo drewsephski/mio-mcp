@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { committedOutcomes } from "./outcomes.ts";
 import { AppwriteException, Permission, Query, Role, type Messaging, type Models, type TablesDB, type Users } from "node-appwrite";
 import { createAgent, type AgentRunner } from "./agent.ts";
 import type { Notes, Reminders, SmsConnections, SmsConversations, SmsJobs, SmsReceipts, SmsTurns } from "./generated.ts";
@@ -151,7 +152,7 @@ export function createAssistant(tables: TablesDB, users: Users, messaging: Messa
       await mio.assertHealthy();
       if (!reply.trim() || reply.length > 700) throw new Error("Invalid reply");
       await fence(job.ownerId, token, transaction.$id);
-      await tables.createRow({ ...resource("sms_turns"), rowId: job.$id, data: { ownerId: job.ownerId, userText: job.body, reply, noteIds: [...mio.noteIds].slice(-10), reminderIds: [...mio.reminderIds].slice(-10) }, permissions: [Permission.read(Role.user(job.ownerId))], transactionId: transaction.$id });
+      await tables.createRow({ ...resource("sms_turns"), rowId: job.$id, data: { ownerId: job.ownerId, userText: job.body, reply, noteIds: [...mio.noteIds].slice(-10), reminderIds: [...mio.reminderIds].slice(-10), outcomes: committedOutcomes(mio.outcomes) }, permissions: [Permission.read(Role.user(job.ownerId))], transactionId: transaction.$id });
       await tables.createRow({ ...resource("sms_receipts"), rowId: job.$id, data: { ownerId: job.ownerId, phone: job.phone, targetId: job.targetId, payloadHash: job.payloadHash, reply, replyQueued: false, reminderIds: [...mio.reminderIds], deliveryMode: config.verificationMode ? "draft" : "live" }, permissions: [], transactionId: transaction.$id });
       await tables.updateRow({ ...resource("sms_jobs"), rowId: job.$id, data: { status: "done", body: "" }, transactionId: transaction.$id });
       await tables.updateTransaction({ transactionId: transaction.$id, commit: true });
@@ -168,6 +169,7 @@ export function createAssistant(tables: TablesDB, users: Users, messaging: Messa
         if (!await binding(job, failed.$id)) throw new Error("Binding revoked");
         await tables.createRow({ ...resource("sms_receipts"), rowId: job.$id, data: { ownerId: job.ownerId, phone: job.phone, targetId: job.targetId, payloadHash: job.payloadHash,
           reply: "I couldn't finish that request. Nothing was changed. Please try again in a little while.", replyQueued: false, reminderIds: [], deliveryMode: config.verificationMode ? "draft" : "live" }, permissions: [], transactionId: failed.$id });
+        await tables.createRow({ ...resource("sms_turns"), rowId: job.$id, data: { ownerId: job.ownerId, userText: job.body, reply: "I couldn’t finish that request. Nothing was changed.", noteIds: [], reminderIds: [], outcomes: ["failed"] }, permissions: [Permission.read(Role.user(job.ownerId))], transactionId: failed.$id });
         await tables.updateRow({ ...resource("sms_jobs"), rowId: job.$id, data: { status: "failed", body: "" }, transactionId: failed.$id });
         await tables.updateTransaction({ transactionId: failed.$id, commit: true });
       } catch (error) { await tables.updateTransaction({ transactionId: failed.$id, rollback: true }).catch(() => {}); throw error; }
@@ -279,7 +281,18 @@ export function createAssistant(tables: TablesDB, users: Users, messaging: Messa
     for (const row of pending.rows) {
       const token = await acquire(row.ownerId); if (!token) continue;
       try { await reconcileOne(await tables.getRow<Reminders>({ ...resource("reminders"), rowId: row.$id }), token); }
-      catch { failures++; config.log?.("reminder_sync_retryable_failure"); }
+      catch {
+        failures++; config.log?.("reminder_sync_retryable_failure");
+        const failure = await tables.createTransaction({ ttl: 60 });
+        try {
+          await fence(row.ownerId, token, failure.$id);
+          const current = await tables.getRow<Reminders>({ ...resource("reminders"), rowId: row.$id, transactionId: failure.$id });
+          if (current.revision === row.revision && current.messageId === row.messageId && current.syncPending) {
+            await tables.updateRow({ ...resource("reminders"), rowId: row.$id, data: { lastError: "messaging_unavailable" }, transactionId: failure.$id });
+          }
+          await tables.updateTransaction({ transactionId: failure.$id, commit: true });
+        } catch { await tables.updateTransaction({ transactionId: failure.$id, rollback: true }).catch(() => {}); }
+      }
       finally { await release(row.ownerId, token); }
     }
     return { checked: pending.rows.length, failures };

@@ -1,19 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { ArrowLeft, Smartphone } from "lucide-react";
-import { getAppwriteHelpers } from "@/lib/appwrite";
+import { requireBetaPage } from "@/lib/beta-page";
 import { getResourceIds } from "@/lib/config";
 import { getSmsStatus } from "@/lib/sms";
-import { Brand } from "@/app/components/brand";
+import { ProductShell } from "@/app/components/product-shell";
 import { SmsSettings } from "./sms-settings";
 
-export const metadata: Metadata = { title: "SMS Assistant", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "Phone connection", robots: { index: false, follow: false } };
 
 export default async function SmsPage() {
-  const user = await getAppwriteHelpers().getLoggedInUser();
-  if (!user) redirect("/auth");
-  if (!user.emailVerification) redirect("/onboarding");
+  const user = await requireBetaPage();
   const status = await getSmsStatus().catch(() => null);
-  return <main className="sms-settings-shell"><header><Brand /><Link href="/settings" className="text-link"><ArrowLeft size={14} aria-hidden="true" />Back to settings</Link></header><section className="sms-settings-card"><div className="sms-settings-icon"><Smartphone aria-hidden="true" /></div><h1>Connect Mio.</h1><p className="muted">Text Mio to remember something, find a thought, or get a reminder. Keep the conversation going.</p>{status ? <SmsSettings initialStatus={status} ownerId={user.$id} databaseId={getResourceIds().databaseId} /> : <p className="notice notice-error" role="alert">SMS settings are temporarily unavailable. Your web notes are still available. Reload this page in a moment.</p>}</section></main>;
+  return <ProductShell active="settings" title="Phone connection" description="Manage the number you use to text Mio." user={user} actions={<Link href="/settings" className="button button-quiet"><ArrowLeft size={14} aria-hidden="true" />Back to settings</Link>}><section className="sms-settings-card"><div className="sms-settings-icon"><Smartphone aria-hidden="true" /></div><h2>{status?.connected ? "Your phone is connected." : "Connect your phone."}</h2><p className="muted">Connect your number to save thoughts and request reminders over text.</p>{status ? <SmsSettings initialStatus={status} ownerId={user.$id} databaseId={getResourceIds().databaseId} /> : <p className="notice notice-error" role="alert">SMS settings are temporarily unavailable. Your web notes are still available. Reload this page in a moment.</p>}</section></ProductShell>;
 }

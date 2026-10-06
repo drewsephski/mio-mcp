@@ -1,4 +1,5 @@
 import { tool, type ToolSet } from "ai";
+import type { Outcome } from "./outcomes.ts";
 import { AppwriteException, Permission, Query, Role, type TablesDB } from "node-appwrite";
 import { z } from "zod";
 import { Temporal } from "@js-temporal/polyfill";
@@ -28,6 +29,7 @@ export function createMioTools(tables: TablesDB, options: {
   const seenNotes = new Set<string>(), seenReminders = new Set<string>();
   const fullNotes = new Set<string>();
   const noteIds = new Set<string>(), reminderIds = new Set<string>();
+  const outcomes = new Set<Outcome>();
   let sequence = 0, calls = 0, mutations = 0, deleted = false;
   let fatal: unknown;
   let tail: Promise<unknown> = Promise.resolve();
@@ -75,7 +77,7 @@ export function createMioTools(tables: TablesDB, options: {
     rows.rows.forEach(row => editable(owned(row)));
     for (const row of rows.rows) {
       await tables.updateRow({ ...resource("reminders"), rowId: row.$id, data: { status: "canceled", syncPending: true } });
-      reminderIds.add(row.$id);
+      reminderIds.add(row.$id); outcomes.add("canceled_reminder");
     }
   }
   async function assertDeleteReference(noteId: string, reference: string) {
@@ -98,15 +100,20 @@ export function createMioTools(tables: TablesDB, options: {
   }
   // AI SDK can execute parallel tool calls. Serialize them and bound both
   // reads and writes; all side effects are staged in the SAME turn transaction.
-  function define<S extends z.ZodType>(description: string, inputSchema: S, execute: (input: z.output<S>) => Promise<unknown>, writes = false) {
+  function define<S extends z.ZodType>(description: string, inputSchema: S, execute: (input: z.output<S>) => Promise<unknown>, writes = false, outcome?: Outcome) {
     return tool({ description, inputSchema, execute: (input) => {
       const run = tail.then(async () => {
         options.signal.throwIfAborted();
         if (fatal) throw fatal;
         if (++calls > 20 || (writes && ++mutations > 8)) throw new ToolError("This turn has too many actions; split the request");
-        try { return await execute(inputSchema.parse(input)); }
+        try {
+          const result = await execute(inputSchema.parse(input));
+          if (outcome) outcomes.add(outcome);
+          else if (!writes) outcomes.add("answered");
+          return result;
+        }
         catch (error) {
-          if (error instanceof ToolError) return { error: error.message };
+          if (error instanceof ToolError) { outcomes.add("clarification"); if (outcome === "created_reminder" || outcome === "updated_reminder") outcomes.add("reminder_rejected"); return { error: error.message }; }
           if (error instanceof AppwriteException && error.code === 404) return { error: "That item is unavailable" };
           // Do not let SDK tool-error handling turn an infrastructure failure
           // into a partially committed turn, or leak API errors to the model.
@@ -117,10 +124,11 @@ export function createMioTools(tables: TablesDB, options: {
     } });
   }
   const tools: ToolSet = {
+    askClarification: define("Request clarification when the target, date, or intent is ambiguous. This performs no mutation. Then ask one short question in your reply.", z.object({ reason: z.enum(["target", "time", "intent"]) }).strict(), async () => ({ clarificationRequired: true }), false, "clarification"),
     createNote: define("Store a useful thought. Do not use for corrections or questions.", z.object({ title: z.string().trim().min(1).max(255), body: z.string().min(1).max(16000), project: z.string().max(128).optional() }).strict(), async input => {
       const rowId = `n_${digest(`${options.turnId}:${sequence++}`).slice(0, 32)}`;
       return noteView(await tables.createRow<Notes>({ ...resource("notes"), rowId, data: { ...input, project: input.project ?? "", ownerId: options.ownerId, source: "sms", archived: false, completed: false }, permissions }));
-    }, true),
+    }, true, "created_note"),
     getNote: define("Read one exact note, including before editing a conversational reference. Never replace a truncated body.", z.object({ noteId: id }).strict(), async ({ noteId }) => noteView(await getNote(noteId), true)),
     listRecentNotes: define("Read up to eight most recently changed active notes.", z.object({}).strict(), async () => {
       const result = await tables.listRows<Notes>({ ...resource("notes"), queries: [Query.equal("ownerId", options.ownerId), Query.equal("archived", false), Query.orderDesc("$updatedAt"), Query.limit(8)], ttl: 0 });
@@ -139,11 +147,11 @@ export function createMioTools(tables: TablesDB, options: {
       if (changes.body !== undefined && (!fullNotes.has(noteId) || current.body.length > 16000)) throw new ToolError("Read the complete note before replacing its body; very long notes must be edited in Mio");
       if (changes.completed) await cancelLinked(noteId);
       return noteView(await tables.updateRow<Notes>({ ...resource("notes"), rowId: noteId, data: changes }));
-    }, true),
+    }, true, "updated_note"),
     archiveNote: define("Archive one previously read note and cancel its pending reminders.", z.object({ noteId: id }).strict(), async ({ noteId }) => {
       requireRead(seenNotes, noteId); await getNote(noteId); await cancelLinked(noteId);
       return noteView(await tables.updateRow<Notes>({ ...resource("notes"), rowId: noteId, data: { archived: true } }));
-    }, true),
+    }, true, "archived_note"),
     deleteNote: define("Delete ONE unambiguous previously read note. reference must quote the target words from the current SMS (e.g. 'work', 'that note'). Named references are checked against all owned candidates; pronouns require one recent note. Never bulk delete.", z.object({ noteId: id, reference: z.string().trim().min(1).max(120) }).strict(), async ({ noteId, reference }) => {
       requireRead(seenNotes, noteId); await getNote(noteId);
       await assertDeleteReference(noteId, reference);
@@ -153,7 +161,7 @@ export function createMioTools(tables: TablesDB, options: {
       await cancelLinked(noteId);
       await tables.deleteRow({ ...resource("notes"), rowId: noteId }); deleted = true; noteIds.add(noteId);
       return { deleted: true };
-    }, true),
+    }, true, "deleted_note"),
     createReminder: define("Create a requested SMS reminder, optionally linked to a note. Separate local event time from notification offset/time. Returns UTC times for precise confirmation.", z.object({ ...timing, noteId: id.optional(), message: z.string().trim().min(1).max(500) }).strict(), async input => {
       if (input.noteId) { requireRead(seenNotes, input.noteId); await getNote(input.noteId); }
       if (options.limits) {
@@ -166,7 +174,7 @@ export function createMioTools(tables: TablesDB, options: {
         ...times, ownerId: options.ownerId, noteId: input.noteId ?? "", timezone: options.timezone, message: input.message,
         status: "pending", revision: 1, messageId: scheduledMessageId(rowId, 1), appliedMessageId: "", targetId: options.targetId, syncPending: true, lastError: "",
       }, permissions: readOnly }));
-    }, true),
+    }, true, "created_reminder"),
     getReminder: define("Read one exact reminder before changing it; eventAt/remindAt are UTC instants.", z.object({ reminderId: id }).strict(), async ({ reminderId }) => reminderView(await getReminder(reminderId))),
     listUpcomingReminders: define("Retrieve up to ten active reminders, optionally for an exact note or a local calendar day.", z.object({ noteId: id.optional(), day: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional() }).strict(), async ({ noteId, day }) => {
       const queries = [Query.equal("ownerId", options.ownerId), Query.equal("status", ["pending", "scheduled"]), Query.orderAsc("remindAt"), Query.limit(10)];
@@ -191,15 +199,15 @@ export function createMioTools(tables: TablesDB, options: {
       const times = future(eventLocal, offset, input.remindLocal);
       const revision = row.revision + 1;
       return reminderView(await tables.updateRow<Reminders>({ ...resource("reminders"), rowId: row.$id, data: { ...times, timezone: options.timezone, message: input.message ?? row.message, revision, messageId: scheduledMessageId(row.$id, revision), syncPending: true, status: "pending", lastError: "" } }));
-    }, true),
+    }, true, "updated_reminder"),
     cancelReminder: define("Cancel one previously read reminder. Already-sent reminders cannot be recalled.", z.object({ reminderId: id }).strict(), async ({ reminderId }) => {
       requireRead(seenReminders, reminderId); const row = await getReminder(reminderId); editable(row);
       return reminderView(await tables.updateRow<Reminders>({ ...resource("reminders"), rowId: reminderId, data: { status: "canceled", syncPending: true } }));
-    }, true),
+    }, true, "canceled_reminder"),
     setTimezone: define("Save an explicitly supplied IANA timezone for future turns. Ask user to resend time requests after changing timezone.", z.object({ timezone: timezoneSchema }).strict(), async ({ timezone }) => {
       await tables.updateRow({ ...resource("sms_conversations"), rowId: options.ownerId, data: { timezone } });
       return { timezone, appliesFromNextTurn: true };
     }, true),
   };
-  return { tools, noteIds, reminderIds, async assertHealthy() { await tail; if (fatal) throw fatal; options.signal.throwIfAborted(); } };
+  return { tools, noteIds, reminderIds, outcomes, async assertHealthy() { await tail; if (fatal) throw fatal; options.signal.throwIfAborted(); } };
 }

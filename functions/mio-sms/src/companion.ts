@@ -21,7 +21,7 @@ const preferencesSchema = z.object({ timezone: timezoneSchema.optional(), defaul
 }).strict().refine(value => Object.keys(value).length > 0, "Supply a preference to save");
 
 export type ReminderView = Pick<Reminders, "noteId" | "eventAt" | "remindAt" | "timezone" | "message" | "status" | "revision" | "syncPending" | "lastError"> & { id: string };
-export type ActivityView = { id: string; createdAt: string; userText: string; reply: string; notes: { id: string; title: string }[]; reminderIds: string[] };
+export type ActivityView = { id: string; createdAt: string; userText: string; reply: string; notes: { id: string; title: string }[]; reminderIds: string[]; outcomes: string[] };
 type Assistant = ReturnType<typeof createAssistant>;
 
 function parse<T>(schema: z.ZodType<T>, value: unknown): T {
@@ -83,7 +83,7 @@ export function createCompanionService(tables: TablesDB, users: Users, assistant
       for (const row of result.rows) { owned(row, ownerId); notes.set(row.$id, row.title); }
     }
     const items: ActivityView[] = page.map(row => ({ id: row.$id, createdAt: row.$createdAt, userText: row.userText, reply: row.reply,
-      notes: row.noteIds.filter(noteId => notes.has(noteId)).map(noteId => ({ id: noteId, title: notes.get(noteId)! })), reminderIds: row.reminderIds }));
+      notes: row.noteIds.filter(noteId => notes.has(noteId)).map(noteId => ({ id: noteId, title: notes.get(noteId)! })), reminderIds: row.reminderIds, outcomes: row.outcomes ?? [] }));
     return { items, nextCursor: rows.length > 25 ? rows[24].$id : null };
   }
   async function preferences(ownerId: string) {

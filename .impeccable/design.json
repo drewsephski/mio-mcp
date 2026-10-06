@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-06T19:02:09.959476+00:00",
+  "generatedAt": "2026-10-06T20:46:13.648972+00:00",
   "title": "Design System: Mio",
   "extensions": {
     "colorMeta": {
@@ -290,7 +290,7 @@
       "refersTo": "auth-card",
       "description": "Flat white account container with a neutral stroke and soft corners.",
       "html": "<section class=\"ds-card\"><h1>A little room for you.</h1><p>Open your private workspace.</p></section>",
-      "css": ".ds-card{width:100%;max-width:420px;background:var(--background);color:var(--foreground);padding:36px;border:1px solid var(--line);border-radius:12px;font-family:var(--font-geist-sans, Geist),sans-serif;}.ds-card h1{font-size:28px;letter-spacing:-.03em;font-weight:600;margin:0 0 9px;}.ds-card p{color:var(--muted);font-size:13px;line-height:1.65;margin:0 0 27px;}@media(max-width:600px){.ds-card{padding:28px;}}"
+      "css": ".ds-card{width:100%;max-width:460px;background:var(--background);color:var(--foreground);padding:36px;border:1px solid var(--line);border-radius:16px;font-family:var(--font-geist-sans, Geist),sans-serif;}.ds-card h1{font-size:28px;letter-spacing:-.03em;font-weight:600;margin:0 0 9px;}.ds-card p{color:var(--muted);font-size:13px;line-height:1.65;margin:0 0 27px;}@media(max-width:600px){.ds-card{padding:28px;}}"
     },
     {
       "name": "Mio Brand",
@@ -308,49 +308,16 @@
     }
   ],
   "narrative": {
-    "northStar": "A little room for your thoughts",
-    "overview": "Mio uses the shipped product's own phrase as its north star: a quiet, compact workspace with room for the note itself. White and cool off-white surfaces, ink text, blue actions, and Geist establish the user-pinned visual direction. The same restrained controls run through the landing page, account forms, and dashboard.\n\nDensity belongs in navigation, metadata, and actions; reading and editing receive breathing room. Structure comes from thin dividers and pale selections rather than ornamental depth. Product demonstrations remain interactive semantic UI, with clear example labeling.",
+    "northStar": "A private assistant in Messages, with a clear companion",
+    "overview": "Mio is a private assistant for people who want to capture thoughts and manage reminders through the Messages app they already use. The landing page explains that workflow and leads invited users to create an account. The companion makes saved information and exact reminder schedules easy to inspect.\n\nThe visual direction keeps Mio\u2019s white canvas, clear blue, three-bar wordmark, and compact navigation. The signature is the transition from a familiar text conversation into a structured note or reminder. That is the one expressive device; surrounding layouts remain quiet.",
     "keyCharacteristics": [
-      "Crisp white surfaces with one blue action accent.",
-      "Compact controls surrounding a spacious editor.",
-      "Geist typography and consistent outline SVG icons.",
-      "Thin dividers, soft corners, and flat tonal layering.",
-      "Brief color feedback and reduced-motion support."
+      "White reading surfaces and Mio blue actions.",
+      "Compact navigation around spacious notes and schedules.",
+      "Self-hosted Manrope and Geist on the web; native system text on iOS.",
+      "Explicit state and error recovery for private mutations."
     ],
-    "rules": [
-      {
-        "name": "The Action Blue Rule",
-        "body": "Use blue for actions, selection cues, and the brand; keep reading surfaces white or cool off-white.",
-        "section": "colors"
-      },
-      {
-        "name": "The Readable Muted Rule",
-        "body": "Editor and search placeholders use the shared muted text token. Do not restore the lighter editor-placeholder treatment removed during finish review.",
-        "section": "colors"
-      },
-      {
-        "name": "The Reading Room Rule",
-        "body": "Keep the editor's body text and generous line-height distinct from compact metadata. The miniature landing demo's smaller illustrative text is not a reusable reading size for product content.",
-        "section": "typography"
-      },
-      {
-        "name": "The Flat Surface Rule",
-        "body": "Use thin dividers and tonal fills to establish structure across the workspace and account surfaces.",
-        "section": "elevation"
-      }
-    ],
-    "dos": [
-      "Do keep blue actions and selection cues consistent across landing, account, and workspace surfaces.",
-      "Do preserve readable muted copy, visible focus outlines, and accessible names for icon actions.",
-      "Do give editor text breathing room while keeping surrounding controls compact.",
-      "Do adapt the workspace through the shipped rail and horizontal-list patterns at smaller widths.",
-      "Do keep control feedback brief and honor reduced motion by removing transitions and smooth scrolling."
-    ],
-    "donts": [
-      "Don't add extra brand accent palettes, ornamental shadows, or entrance animations to this crisp-white world.",
-      "Don't use miniature demo typography as the reading style for full product content.",
-      "Don't replace the consistent outline SVG icons with glyph characters.",
-      "Don't treat a landing example's tilt or composition as a global container rule."
-    ]
+    "rules": [],
+    "dos": [],
+    "donts": []
   }
 }

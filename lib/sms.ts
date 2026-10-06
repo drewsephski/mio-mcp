@@ -1,4 +1,5 @@
 import "server-only";
+import { release } from "@/functions/mio-sms/src/release.generated";
 import { ExecutionMethod, Functions } from "node-appwrite";
 import { z } from "zod";
 import { requireSession } from "./appwrite";
@@ -9,17 +10,17 @@ export const smsStatusSchema = z.object({ connected: z.boolean(), phone: z.strin
 export const smsChallengeSchema = z.object({ code: z.string().regex(/^[a-f0-9]{32}$/), expiresAt: z.iso.datetime(), mioPhone: z.string() });
 export type SmsStatus = z.infer<typeof smsStatusSchema>;
 export type SmsChallenge = z.infer<typeof smsChallengeSchema>;
-type SmsPath = "/status" | "/challenge" | "/disconnect" | "/reminders" | "/activity" | "/preferences" | "/reminders/update" | "/reminders/cancel" | "/usage";
+type SmsPath = "/status" | "/challenge" | "/disconnect" | "/reminders" | "/activity" | "/preferences" | "/reminders/update" | "/reminders/cancel" | "/usage" | "/operator" | "/visit" | "/admission";
 
 export async function callSmsFunction(path: SmsPath, options: { query?: Record<string, string | undefined>; body?: unknown } = {}) {
   const { client } = await requireSession();
   const query = new URLSearchParams();
   for (const [key, value] of Object.entries(options.query ?? {})) if (value !== undefined) query.set(key, value);
-  const read = ["/status", "/reminders", "/activity", "/preferences", "/usage"].includes(path) && options.body === undefined;
+  const read = ["/status", "/reminders", "/activity", "/preferences", "/usage", "/operator", "/admission"].includes(path) && options.body === undefined;
   const execution = await new Functions(client).createExecution({
     functionId: process.env.APPWRITE_SMS_FUNCTION_ID ?? "mio-sms", xpath: `${path}${query.size ? `?${query}` : ""}`,
     method: read ? ExecutionMethod.GET : ExecutionMethod.POST,
-    body: options.body === undefined ? undefined : JSON.stringify(options.body), async: false,
+    body: options.body === undefined ? undefined : JSON.stringify(options.body), async: false, headers: { "x-mio-release-id": release.releaseId },
   });
   if (execution.responseStatusCode < 200 || execution.responseStatusCode >= 300) {
     const status = execution.responseStatusCode;

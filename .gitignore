@@ -47,3 +47,10 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 /functions/*/dist/
+/functions/mio-sms/src/release.generated.ts
+/apps/mobile/node_modules/
+/apps/mobile/.expo/
+/apps/mobile/dist/
+/apps/mobile/ios/
+/apps/mobile/android/
+/packages/*/node_modules/

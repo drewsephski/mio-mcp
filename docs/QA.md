@@ -314,3 +314,24 @@ queued AI/replies after verification loss. Onboarding reuses the existing email
 verification flow before phone setup. An unverified local fixture redirected
 from Today to the verification screen at 390px, with no pairing action or
 horizontal overflow. No verification email was sent during QA.
+
+
+## 2026-10-06 operational beta hardening
+
+Local configuration checks, lint, web/Function/mobile TypeScript, production
+Function/web builds and iOS export passed. The deterministic suite passed 125
+tests with one explicitly paid evaluation skipped. A Release simulator build
+succeeded with zero errors and rendered sign-in on iPhone 17 Pro / iOS 26.5.
+The simulator performed the expected unauthenticated account request and
+returned to sign-in. This is not signed-in device, Apple linking or handset proof.
+
+The first coordinated live release converged the previously missing usage and
+consent/preference schema and verified equal schema/Function/Site identity.
+Thirty-five real Appwrite permission checks and the disposable two-user
+isolation/admission/operator checks passed with cleanup. The live operator
+page showed aggregate data and compatible release status. Provider inspection
+was read-only; voice routing was preserved. A2P/Advanced Opt-Out/support/spending
+remain operator-attested, and real two-phone cohort acceptance is still pending.
+Final release identity and partial/complete deployment evidence are recorded in
+the private server release ledger and ignored .workflow receipts, not inferred
+from this historical note. See OPERATIONS.md for the only release workflow.

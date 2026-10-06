@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingButton } from "@/app/components/loading-button";
+
 import Link from "next/link";
 import { useState, useTransition, type FormEvent } from "react";
 import { z } from "zod";
@@ -56,7 +58,7 @@ export function AuthFlowForm(props: AuthFlowFormProps) {
     return (
       <div className="form-stack">
         <p className="notice notice-error" role="alert">This link is incomplete. Open the full link from your email, or request a new one.</p>
-        <Link className="button button-primary" href={props.mode === "reset" ? "/auth/forgot-password" : "/auth"}>Request a new link</Link>
+        <Link className="button button-primary" href={props.mode === "reset" ? "/auth/forgot-password" : "/onboarding"}>{props.mode === "reset" ? "Request a reset link" : "Open email verification"}</Link>
       </div>
     );
   }
@@ -85,7 +87,7 @@ export function AuthFlowForm(props: AuthFlowFormProps) {
               </div>
             </>
           )}
-          <button className="button button-primary w-full" type="submit" disabled={pending}>{pending ? "Please wait…" : props.mode === "forgot" ? "Send reset link" : props.mode === "reset" ? "Update password" : "Verify email address"}</button>
+          <LoadingButton loading={pending} className="button button-primary w-full" type="submit" disabled={pending}>{props.mode === "forgot" ? "Send reset link" : props.mode === "reset" ? "Update password" : "Verify email address"}</LoadingButton>
         </form>
       )}
       {result && <p className={`notice ${result.ok ? "notice-success" : "notice-error"}`} role={result.ok ? "status" : "alert"}>{result.message}</p>}

@@ -1,1 +1,5 @@
-export default function Loading() { return <main className="auth-shell"><p role="status" className="muted">Opening your conversation…</p></main>; }
+import { PageLoading } from "@/app/components/page-loading";
+
+export default function Loading() {
+  return <PageLoading message="Opening your conversation…" />;
+}
