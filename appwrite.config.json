@@ -1,0 +1,233 @@
+{
+  "organizationId": "66a7568a001f492d1097",
+  "projectId": "68d13a4a000d854004b3",
+  "projectName": "Mio",
+  "endpoint": "https://nyc.cloud.appwrite.io/v1",
+  "settings": {
+    "services": {
+      "account": true,
+      "avatars": true,
+      "databases": true,
+      "locale": true,
+      "health": true,
+      "storage": true,
+      "teams": true,
+      "users": true,
+      "sites": true,
+      "functions": true,
+      "graphql": true,
+      "messaging": true
+    },
+    "protocols": {
+      "rest": true,
+      "graphql": true,
+      "websocket": true
+    },
+    "auth": {
+      "methods": {
+        "jwt": true,
+        "phone": true,
+        "invites": true,
+        "anonymous": true,
+        "email-otp": true,
+        "magic-url": true,
+        "email-password": true
+      },
+      "security": {
+        "duration": 31536000,
+        "limit": null,
+        "sessionsLimit": 10,
+        "passwordHistory": null,
+        "passwordDictionary": false,
+        "personalDataCheck": false,
+        "sessionAlerts": false,
+        "mockNumbers": []
+      }
+    }
+  },
+  "sites": [
+    {
+      "$id": "mio-web",
+      "name": "Mio",
+      "framework": "nextjs",
+      "adapter": "ssr",
+      "buildRuntime": "node-22",
+      "installCommand": "corepack pnpm install --frozen-lockfile",
+      "buildCommand": "corepack pnpm build",
+      "outputDirectory": ".next",
+      "fallbackFile": "",
+      "buildSpecification": "s-2vcpu-2gb",
+      "runtimeSpecification": "s-0.5vcpu-512mb",
+      "deploymentRetention": 7,
+      "timeout": 30,
+      "logging": true,
+      "path": ".appwrite/site",
+      "scopes": []
+    }
+  ],
+  "tablesDB": [
+    {
+      "$id": "mio",
+      "name": "Mio",
+      "enabled": true
+    }
+  ],
+  "tables": [
+    {
+      "$id": "notes",
+      "$permissions": [
+        "create(\"users\")"
+      ],
+      "databaseId": "mio",
+      "name": "Notes",
+      "enabled": true,
+      "rowSecurity": true,
+      "columns": [
+        {
+          "key": "ownerId",
+          "type": "varchar",
+          "required": true,
+          "array": false,
+          "size": 36
+        },
+        {
+          "key": "title",
+          "type": "varchar",
+          "required": true,
+          "array": false,
+          "size": 255
+        },
+        {
+          "key": "body",
+          "type": "mediumtext",
+          "required": true,
+          "array": false
+        },
+        {
+          "key": "archived",
+          "type": "boolean",
+          "required": false,
+          "array": false,
+          "default": false
+        }
+      ],
+      "indexes": [
+        {
+          "key": "owner_archive",
+          "type": "key",
+          "columns": [
+            "ownerId",
+            "archived"
+          ],
+          "orders": [
+            "ASC",
+            "ASC"
+          ]
+        },
+        {
+          "key": "title_search",
+          "type": "fulltext",
+          "columns": [
+            "title"
+          ],
+          "orders": [
+            "ASC"
+          ]
+        }
+      ]
+    },
+    {
+      "$id": "attachments",
+      "$permissions": [
+        "create(\"users\")"
+      ],
+      "databaseId": "mio",
+      "name": "Attachments",
+      "enabled": true,
+      "rowSecurity": true,
+      "columns": [
+        {
+          "key": "ownerId",
+          "type": "varchar",
+          "required": true,
+          "array": false,
+          "size": 36
+        },
+        {
+          "key": "noteId",
+          "type": "varchar",
+          "required": true,
+          "array": false,
+          "size": 36
+        },
+        {
+          "key": "fileId",
+          "type": "varchar",
+          "required": true,
+          "array": false,
+          "size": 36
+        },
+        {
+          "key": "name",
+          "type": "varchar",
+          "required": true,
+          "array": false,
+          "size": 255
+        },
+        {
+          "key": "size",
+          "type": "integer",
+          "required": true,
+          "array": false,
+          "min": 1,
+          "max": 10485760
+        },
+        {
+          "key": "mimeType",
+          "type": "varchar",
+          "required": true,
+          "array": false,
+          "size": 128
+        }
+      ],
+      "indexes": [
+        {
+          "key": "note_owner",
+          "type": "key",
+          "columns": [
+            "noteId",
+            "ownerId"
+          ],
+          "orders": [
+            "ASC",
+            "ASC"
+          ]
+        }
+      ]
+    }
+  ],
+  "buckets": [
+    {
+      "$id": "68d143bf001b9a793c30",
+      "$permissions": [
+        "create(\"users\")"
+      ],
+      "fileSecurity": true,
+      "name": "Note attachments",
+      "enabled": true,
+      "maximumFileSize": 10485760,
+      "allowedFileExtensions": [
+        "pdf",
+        "png",
+        "jpg",
+        "jpeg",
+        "webp",
+        "txt",
+        "md"
+      ],
+      "compression": "none",
+      "encryption": true,
+      "antivirus": true
+    }
+  ]
+}

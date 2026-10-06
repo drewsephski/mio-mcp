@@ -1,0 +1,349 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-06T15:42:27.711582+00:00",
+  "title": "Design System: Mio",
+  "extensions": {
+    "colorMeta": {
+      "background": {
+        "role": "neutral",
+        "displayName": "Background",
+        "tonalRamp": [
+          "oklch(15% 0.00000 89.88)",
+          "oklch(26% 0.00000 89.88)",
+          "oklch(38% 0.00000 89.88)",
+          "oklch(49% 0.00000 89.88)",
+          "oklch(61% 0.00000 89.88)",
+          "oklch(72% 0.00000 89.88)",
+          "oklch(84% 0.00000 89.88)",
+          "oklch(95% 0.00000 89.88)"
+        ]
+      },
+      "foreground": {
+        "role": "neutral",
+        "displayName": "Foreground",
+        "tonalRamp": [
+          "oklch(15% 0.03877 264.35)",
+          "oklch(26% 0.03877 264.35)",
+          "oklch(38% 0.03877 264.35)",
+          "oklch(49% 0.03877 264.35)",
+          "oklch(61% 0.03877 264.35)",
+          "oklch(72% 0.03877 264.35)",
+          "oklch(84% 0.03877 264.35)",
+          "oklch(95% 0.03877 264.35)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted",
+        "tonalRamp": [
+          "oklch(15% 0.03988 260.31)",
+          "oklch(26% 0.03988 260.31)",
+          "oklch(38% 0.03988 260.31)",
+          "oklch(49% 0.03988 260.31)",
+          "oklch(61% 0.03988 260.31)",
+          "oklch(72% 0.03988 260.31)",
+          "oklch(84% 0.03988 260.31)",
+          "oklch(95% 0.03988 260.31)"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Line",
+        "tonalRamp": [
+          "oklch(15% 0.01088 256.70)",
+          "oklch(26% 0.01088 256.70)",
+          "oklch(38% 0.01088 256.70)",
+          "oklch(49% 0.01088 256.70)",
+          "oklch(61% 0.01088 256.70)",
+          "oklch(72% 0.01088 256.70)",
+          "oklch(84% 0.01088 256.70)",
+          "oklch(95% 0.01088 256.70)"
+        ]
+      },
+      "blue": {
+        "role": "primary",
+        "displayName": "Blue",
+        "tonalRamp": [
+          "oklch(15% 0.19775 263.53)",
+          "oklch(26% 0.19775 263.53)",
+          "oklch(38% 0.19775 263.53)",
+          "oklch(49% 0.19775 263.53)",
+          "oklch(61% 0.19775 263.53)",
+          "oklch(72% 0.19775 263.53)",
+          "oklch(84% 0.19775 263.53)",
+          "oklch(95% 0.19775 263.53)"
+        ]
+      },
+      "blue-hover": {
+        "role": "primary",
+        "displayName": "Blue Hover",
+        "tonalRamp": [
+          "oklch(15% 0.18123 263.80)",
+          "oklch(26% 0.18123 263.80)",
+          "oklch(38% 0.18123 263.80)",
+          "oklch(49% 0.18123 263.80)",
+          "oklch(61% 0.18123 263.80)",
+          "oklch(72% 0.18123 263.80)",
+          "oklch(84% 0.18123 263.80)",
+          "oklch(95% 0.18123 263.80)"
+        ]
+      },
+      "pale": {
+        "role": "primary",
+        "displayName": "Pale",
+        "tonalRamp": [
+          "oklch(15% 0.01276 266.70)",
+          "oklch(26% 0.01276 266.70)",
+          "oklch(38% 0.01276 266.70)",
+          "oklch(49% 0.01276 266.70)",
+          "oklch(61% 0.01276 266.70)",
+          "oklch(72% 0.01276 266.70)",
+          "oklch(84% 0.01276 266.70)",
+          "oklch(95% 0.01276 266.70)"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Surface",
+        "tonalRamp": [
+          "oklch(15% 0.00697 268.55)",
+          "oklch(26% 0.00697 268.55)",
+          "oklch(38% 0.00697 268.55)",
+          "oklch(49% 0.00697 268.55)",
+          "oklch(61% 0.00697 268.55)",
+          "oklch(72% 0.00697 268.55)",
+          "oklch(84% 0.00697 268.55)",
+          "oklch(95% 0.00697 268.55)"
+        ]
+      },
+      "danger": {
+        "role": "semantic",
+        "displayName": "Danger",
+        "tonalRamp": [
+          "oklch(15% 0.17916 20.66)",
+          "oklch(26% 0.17916 20.66)",
+          "oklch(38% 0.17916 20.66)",
+          "oklch(49% 0.17916 20.66)",
+          "oklch(61% 0.17916 20.66)",
+          "oklch(72% 0.17916 20.66)",
+          "oklch(84% 0.17916 20.66)",
+          "oklch(95% 0.17916 20.66)"
+        ]
+      },
+      "danger-surface": {
+        "role": "semantic",
+        "displayName": "Danger Surface",
+        "tonalRamp": [
+          "oklch(15% 0.01517 12.42)",
+          "oklch(26% 0.01517 12.42)",
+          "oklch(38% 0.01517 12.42)",
+          "oklch(49% 0.01517 12.42)",
+          "oklch(61% 0.01517 12.42)",
+          "oklch(72% 0.01517 12.42)",
+          "oklch(84% 0.01517 12.42)",
+          "oklch(95% 0.01517 12.42)"
+        ]
+      },
+      "field-border": {
+        "role": "neutral",
+        "displayName": "Field Border",
+        "tonalRamp": [
+          "oklch(15% 0.01991 260.17)",
+          "oklch(26% 0.01991 260.17)",
+          "oklch(38% 0.01991 260.17)",
+          "oklch(49% 0.01991 260.17)",
+          "oklch(61% 0.01991 260.17)",
+          "oklch(72% 0.01991 260.17)",
+          "oklch(84% 0.01991 260.17)",
+          "oklch(95% 0.01991 260.17)"
+        ]
+      },
+      "field-placeholder": {
+        "role": "neutral",
+        "displayName": "Field Placeholder",
+        "tonalRamp": [
+          "oklch(15% 0.03665 258.37)",
+          "oklch(26% 0.03665 258.37)",
+          "oklch(38% 0.03665 258.37)",
+          "oklch(49% 0.03665 258.37)",
+          "oklch(61% 0.03665 258.37)",
+          "oklch(72% 0.03665 258.37)",
+          "oklch(84% 0.03665 258.37)",
+          "oklch(95% 0.03665 258.37)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Landing headline only; responsive values documented in DESIGN.md."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Ordinary reading copy; note bodies use the documented expanded leading."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Sentence-case field labels."
+      },
+      "button": {
+        "displayName": "Button",
+        "purpose": "Standard compact controls."
+      }
+    },
+    "shadows": [],
+    "motion": [
+      {
+        "name": "control-color",
+        "value": "background .15s, color .15s",
+        "purpose": "Brief shared button feedback; removed for reduced motion."
+      },
+      {
+        "name": "anchor-scroll",
+        "value": "smooth",
+        "purpose": "Anchor scrolling; auto for reduced motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "compact-desktop",
+        "value": "1100px"
+      },
+      {
+        "name": "tablet",
+        "value": "800px"
+      },
+      {
+        "name": "phone",
+        "value": "600px"
+      }
+    ],
+    "tonalRampPurpose": "Synthesized OKLCH preview strips required by the panel. These are non-normative swatches, not additional CSS tokens."
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Compact primary action using the shared control geometry.",
+      "html": "<button class=\"ds-button-primary\">Save note</button>",
+      "css": ".ds-button-primary{display:inline-flex;justify-content:center;align-items:center;gap:8px;min-height:40px;padding:10px 16px;border:1px solid transparent;border-radius:8px;font-size:14px;font-weight:550;line-height:1.2;transition:background .15s,color .15s;cursor:pointer;font-family:var(--font-geist-sans, Geist),sans-serif;background:var(--blue);color:var(--background);}.ds-button-primary:hover{background:var(--blue-hover);}.ds-button-primary:focus-visible{outline:2px solid var(--blue);outline-offset:4px;}.ds-button-primary:disabled{opacity:.55;cursor:wait;}@media(prefers-reduced-motion:reduce){.ds-button-primary{transition:none;}}"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Compact secondary action using the shared control geometry.",
+      "html": "<button class=\"ds-button-secondary\">Keep note</button>",
+      "css": ".ds-button-secondary{display:inline-flex;justify-content:center;align-items:center;gap:8px;min-height:40px;padding:10px 16px;border:1px solid transparent;border-radius:8px;font-size:14px;font-weight:550;line-height:1.2;transition:background .15s,color .15s;cursor:pointer;font-family:var(--font-geist-sans, Geist),sans-serif;background:var(--background);color:var(--foreground);border-color:var(--line);}.ds-button-secondary:hover{background:var(--surface);}.ds-button-secondary:focus-visible{outline:2px solid var(--blue);outline-offset:4px;}.ds-button-secondary:disabled{opacity:.55;cursor:wait;}@media(prefers-reduced-motion:reduce){.ds-button-secondary{transition:none;}}"
+    },
+    {
+      "name": "Quiet Button",
+      "kind": "button",
+      "refersTo": "button-quiet",
+      "description": "Compact quiet action using the shared control geometry.",
+      "html": "<button class=\"ds-button-quiet\">Cancel</button>",
+      "css": ".ds-button-quiet{display:inline-flex;justify-content:center;align-items:center;gap:8px;min-height:40px;padding:10px 16px;border:1px solid transparent;border-radius:8px;font-size:14px;font-weight:550;line-height:1.2;transition:background .15s,color .15s;cursor:pointer;font-family:var(--font-geist-sans, Geist),sans-serif;background:transparent;color:var(--muted);}.ds-button-quiet:hover{background:var(--surface);color:var(--foreground);}.ds-button-quiet:focus-visible{outline:2px solid var(--blue);outline-offset:4px;}.ds-button-quiet:disabled{opacity:.55;cursor:wait;}@media(prefers-reduced-motion:reduce){.ds-button-quiet{transition:none;}}"
+    },
+    {
+      "name": "Danger Button",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "Compact danger action using the shared control geometry.",
+      "html": "<button class=\"ds-button-danger\">Delete permanently</button>",
+      "css": ".ds-button-danger{display:inline-flex;justify-content:center;align-items:center;gap:8px;min-height:40px;padding:10px 16px;border:1px solid transparent;border-radius:8px;font-size:14px;font-weight:550;line-height:1.2;transition:background .15s,color .15s;cursor:pointer;font-family:var(--font-geist-sans, Geist),sans-serif;background:#fff1f2;color:var(--danger);}.ds-button-danger:focus-visible{outline:2px solid var(--blue);outline-offset:4px;}.ds-button-danger:disabled{opacity:.55;cursor:wait;}@media(prefers-reduced-motion:reduce){.ds-button-danger{transition:none;}}"
+    },
+    {
+      "name": "Icon Button",
+      "kind": "button",
+      "refersTo": "icon-button",
+      "description": "Quiet named workspace action with a pale hover fill.",
+      "html": "<button class=\"ds-icon-button\" aria-label=\"Archive note\"><svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect width=\"20\" height=\"5\" x=\"2\" y=\"3\" rx=\"1\"/><path d=\"M4 8v12a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V8M10 12h4\"/></svg></button>",
+      "css": ".ds-icon-button{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border:0;border-radius:6px;background:transparent;color:var(--muted);cursor:pointer;}.ds-icon-button:hover{background:var(--pale);color:var(--blue);}.ds-icon-button:focus-visible{outline:2px solid var(--blue);outline-offset:4px;}.ds-icon-button:disabled{opacity:.55;cursor:wait;}"
+    },
+    {
+      "name": "Account Field",
+      "kind": "input",
+      "refersTo": "field",
+      "description": "Labeled compact account input with the shipped placeholder and focus treatments.",
+      "html": "<label class=\"ds-label\" for=\"ds-email\">Email address</label><input id=\"ds-email\" class=\"ds-field\" type=\"email\" placeholder=\"you@example.com\"/>",
+      "css": ".ds-label{display:block;font-size:13px;font-weight:550;margin-bottom:7px;color:var(--foreground);font-family:var(--font-geist-sans, Geist),sans-serif;}.ds-field{width:100%;border:1px solid #cfd7e4;border-radius:7px;padding:11px 12px;background:var(--background);color:var(--foreground);font-size:14px;caret-color:var(--blue);font-family:var(--font-geist-sans, Geist),sans-serif;}.ds-field::placeholder{color:#69778c;}.ds-field:focus-visible{outline:2px solid var(--blue);outline-offset:4px;}"
+    },
+    {
+      "name": "Workspace Navigation",
+      "kind": "nav",
+      "description": "Sentence-case links with a pale blue active selection.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Workspace\"><a href=\"#notes\" class=\"ds-active\" aria-current=\"page\">My notes</a><a href=\"#archive\">Archive</a></nav>",
+      "css": ".ds-nav{display:flex;flex-direction:column;gap:5px;font-family:var(--font-geist-sans, Geist),sans-serif;}.ds-nav a{display:flex;align-items:center;gap:10px;border-radius:7px;padding:11px 12px;color:var(--muted);font-size:13px;font-weight:500;text-decoration:none;}.ds-nav a.ds-active{background:#e8efff;color:var(--blue);}.ds-nav a:hover{background:#edf2fa;}.ds-nav a:focus-visible{outline:2px solid var(--blue);outline-offset:4px;}"
+    },
+    {
+      "name": "Selected Note Row",
+      "kind": "custom",
+      "refersTo": "note-selected",
+      "description": "Compact selected note with title, clipped excerpt, and quiet date.",
+      "html": "<a class=\"ds-note ds-selected\" href=\"#editor\" aria-current=\"true\"><h2>A thought worth keeping</h2><p>Start with one clear purpose.</p><time datetime=\"2026-10-05\">Oct 5</time></a>",
+      "css": ".ds-note{display:block;border-radius:8px;padding:16px 13px;margin-bottom:4px;color:var(--foreground);text-decoration:none;font-family:var(--font-geist-sans, Geist),sans-serif;}.ds-note:hover{background:var(--surface);}.ds-note.ds-selected{background:var(--pale);}.ds-note h2{margin:0;font-size:13px;font-weight:600;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}.ds-note p{margin:7px 0 0;color:var(--muted);font-size:12px;line-height:1.65;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.ds-note time{display:block;font-size:10px;color:var(--muted);margin-top:11px;}.ds-note:focus-visible{outline:2px solid var(--blue);outline-offset:4px;}"
+    },
+    {
+      "name": "Account Card",
+      "kind": "card",
+      "refersTo": "auth-card",
+      "description": "Flat white account container with a neutral stroke and soft corners.",
+      "html": "<section class=\"ds-card\"><h1>A little room for you.</h1><p>Open your private workspace.</p></section>",
+      "css": ".ds-card{width:100%;max-width:420px;background:var(--background);color:var(--foreground);padding:36px;border:1px solid var(--line);border-radius:12px;font-family:var(--font-geist-sans, Geist),sans-serif;}.ds-card h1{font-size:28px;letter-spacing:-.03em;font-weight:600;margin:0 0 9px;}.ds-card p{color:var(--muted);font-size:13px;line-height:1.65;margin:0 0 27px;}@media(max-width:600px){.ds-card{padding:28px;}}"
+    },
+    {
+      "name": "Mio Brand",
+      "kind": "custom",
+      "description": "The actual CSS-bar identity beside the Geist wordmark.",
+      "html": "<a class=\"ds-brand\" href=\"#home\" aria-label=\"Mio home\"><span class=\"ds-brand-mark\" aria-hidden=\"true\"><span></span><span></span><span></span></span><span>Mio</span></a>",
+      "css": ".ds-brand{display:inline-flex;align-items:center;gap:9px;font-size:25px;font-weight:650;letter-spacing:-.04em;width:max-content;color:var(--foreground);text-decoration:none;font-family:var(--font-geist-sans, Geist),sans-serif;}.ds-brand-mark{display:flex;gap:3px;align-items:flex-end;height:22px;}.ds-brand-mark span{width:5px;background:var(--blue);border-radius:2px;height:15px;}.ds-brand-mark span:nth-child(2){height:22px;}.ds-brand:focus-visible{outline:2px solid var(--blue);outline-offset:4px;}"
+    }
+  ],
+  "narrative": {
+    "northStar": "A little room for your thoughts",
+    "overview": "Mio uses the shipped product's own phrase as its north star: a quiet, compact workspace with room for the note itself. White and cool off-white surfaces, ink text, blue actions, and Geist establish the user-pinned visual direction. The same restrained controls run through the landing page, account forms, and dashboard.\n\nDensity belongs in navigation, metadata, and actions; reading and editing receive breathing room. Structure comes from thin dividers and pale selections rather than ornamental depth. Product demonstrations remain interactive semantic UI, with clear example labeling.",
+    "keyCharacteristics": [
+      "Crisp white surfaces with one blue action accent.",
+      "Compact controls surrounding a spacious editor.",
+      "Geist typography and consistent outline SVG icons.",
+      "Thin dividers, soft corners, and flat tonal layering.",
+      "Brief color feedback and reduced-motion support."
+    ],
+    "rules": [
+      {
+        "name": "The Action Blue Rule",
+        "body": "Use blue for actions, selection cues, and the brand; keep reading surfaces white or cool off-white.",
+        "section": "colors"
+      },
+      {
+        "name": "The Readable Muted Rule",
+        "body": "Editor and search placeholders use the shared muted text token. Do not restore the lighter editor-placeholder treatment removed during finish review.",
+        "section": "colors"
+      },
+      {
+        "name": "The Reading Room Rule",
+        "body": "Keep the editor's body text and generous line-height distinct from compact metadata. The miniature landing demo's smaller illustrative text is not a reusable reading size for product content.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat Surface Rule",
+        "body": "Use thin dividers and tonal fills to establish structure across the workspace and account surfaces.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do keep blue actions and selection cues consistent across landing, account, and workspace surfaces.",
+      "Do preserve readable muted copy, visible focus outlines, and accessible names for icon actions.",
+      "Do give editor text breathing room while keeping surrounding controls compact.",
+      "Do adapt the workspace through the shipped rail and horizontal-list patterns at smaller widths.",
+      "Do keep control feedback brief and honor reduced motion by removing transitions and smooth scrolling."
+    ],
+    "donts": [
+      "Don't add extra brand accent palettes, ornamental shadows, or entrance animations to this crisp-white world.",
+      "Don't use miniature demo typography as the reading style for full product content.",
+      "Don't replace the consistent outline SVG icons with glyph characters.",
+      "Don't treat a landing example's tilt or composition as a global container rule."
+    ]
+  }
+}
