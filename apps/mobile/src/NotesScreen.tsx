@@ -26,11 +26,11 @@ export function NotesScreen() {
   }
   return <><Text style={styles.title}>Notes</Text><Feedback error={error} loading={loading} />{selected ? <Card>
     <Field label="Title" value={title} onChange={setTitle} /><Field label="Note" value={body} onChange={setBody} multiline />
-    <Button title={busy ? "Saving…" : "Save note"} onPress={() => void save()} disabled={busy} />
+    <Button title="Save note" loading={busy} onPress={() => void save()} disabled={busy} />
     <Button title="Discard edits and refresh" secondary onPress={() => { setSelected(null); void load(); }} disabled={busy} />
-  </Card> : <><Text style={styles.muted}>Thoughts saved here or by text.</Text><Button title="Refresh notes" secondary onPress={() => void load()} disabled={loading} />
+  </Card> : <><Text style={styles.muted}>Thoughts saved here or by text.</Text><Button title="Refresh notes" loading={loading} secondary onPress={() => void load()} disabled={loading} />
     {!loading && notes.length === 0 && <Text style={styles.text}>No notes yet. Text Mio something you want to remember.</Text>}
     {notes.map(note => <Card key={note.$id}><Text style={styles.heading}>{note.title}</Text><Text style={styles.text} numberOfLines={4}>{note.body}</Text><Button title="Read or edit" secondary onPress={() => { setSelected(note); setTitle(note.title); setBody(note.body); }} /></Card>)}
-    {cursor && <Button title="More notes" secondary onPress={() => void load(cursor)} disabled={loading} />}</>}
+    {cursor && <Button title="More notes" loading={loading} secondary onPress={() => void load(cursor)} disabled={loading} />}</>}
   </>;
 }

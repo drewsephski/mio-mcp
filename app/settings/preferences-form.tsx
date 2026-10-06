@@ -1,4 +1,6 @@
 "use client";
+
+import { LoadingButton } from "@/app/components/loading-button";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { Preferences } from "@/lib/companion-models";
@@ -27,6 +29,6 @@ export function PreferencesForm({ preferences }: { preferences: Preferences }) {
     <fieldset className="product-fieldset" disabled={blocked}><legend>Quiet hours</legend><p className="product-hint">Mio won’t create or move a reminder into these hours. Applies to new reminders and schedule changes. Existing reminders keep their scheduled time.</p><div className="product-fields-row"><div><label htmlFor="quiet-start" className="label">Start</label><input type="time" id="quiet-start" name="quietHoursStart" className="field" defaultValue={preferences.quietHoursStart} /></div><div><label htmlFor="quiet-end" className="label">End</label><input type="time" id="quiet-end" name="quietHoursEnd" className="field" defaultValue={preferences.quietHoursEnd} /></div></div><p className="product-hint">Leave both empty to turn quiet hours off. Times use your timezone above.</p></fieldset>
     <p className="product-hint">Timezone and default notification changes apply to future reminders. Review existing reminders on the Reminders page.</p>
     {result && <div className={`notice ${result.ok ? "notice-success" : "notice-error"}`} role={result.ok ? "status" : "alert"}><p>{result.ok ? "Preferences saved." : result.error}</p>{!result.ok && result.refreshRequired && <button type="button" className="button button-secondary" onClick={() => window.location.reload()}>Refresh before saving again</button>}</div>}
-    <button className="button button-primary" disabled={blocked}>{pending ? "Saving…" : "Save preferences"}</button>
+    <LoadingButton loading={pending} className="button button-primary" disabled={blocked}>Save preferences</LoadingButton>
   </form>;
 }

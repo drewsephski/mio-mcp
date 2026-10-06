@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
+import { DotsRing } from "@/app/components/ui/dots-ring";
 import { useAppwrite } from "@appwrite.io/react";
 import { Channel } from "appwrite";
 import { refreshNotes } from "./actions";
@@ -12,6 +13,7 @@ export function NotesList({ page, selectedId, search, archived, cursor, ownerId,
   const { realtime } = useAppwrite();
   const [livePage, setLivePage] = useState(page);
   const [liveStatus, setLiveStatus] = useState("");
+  const [refreshing, startTransition] = useTransition();
   useEffect(() => {
     let disposed = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
@@ -19,14 +21,15 @@ export function NotesList({ page, selectedId, search, archived, cursor, ownerId,
     let revision = 0;
     async function refresh() {
       const current = ++revision;
+      if (disposed) return;
       try {
         const result = await refreshNotes({ search: search.length >= 3 ? search : undefined, archived, cursor });
         if (disposed || current !== revision) return;
         if (result.ok) { setLivePage(result.data); setLiveStatus(""); }
         else setLiveStatus("The list changed. Refresh to see your latest notes.");
-      } catch { if (!disposed) setLiveStatus("Live updates paused. Refresh to see your latest notes."); }
+      } catch { if (!disposed && current === revision) setLiveStatus("Live updates paused. Refresh to see your latest notes."); }
     }
-    const reconcile = () => { clearTimeout(timer); timer = setTimeout(() => { void refresh(); }, 120); };
+    const reconcile = () => { clearTimeout(timer); timer = setTimeout(() => { startTransition(refresh); }, 120); };
     realtime.subscribe(Channel.tablesdb(databaseId).table(tableId).row(), event => {
       if ((event.payload as { ownerId?: string }).ownerId === ownerId) reconcile();
     }).then(subscription => {
@@ -36,7 +39,7 @@ export function NotesList({ page, selectedId, search, archived, cursor, ownerId,
     window.addEventListener("focus", reconcile);
     window.addEventListener("online", reconcile);
     return () => { disposed = true; clearTimeout(timer); unsubscribe?.(); window.removeEventListener("focus", reconcile); window.removeEventListener("online", reconcile); };
-  }, [archived, cursor, databaseId, ownerId, realtime, search, tableId]);
+  }, [archived, cursor, databaseId, ownerId, realtime, search, tableId, startTransition]);
 
   function href(noteId?: string, nextCursor?: string) {
     const params = new URLSearchParams();
@@ -47,7 +50,7 @@ export function NotesList({ page, selectedId, search, archived, cursor, ownerId,
     return `/dashboard${params.size ? `?${params}` : ""}`;
   }
 
-  return <section className="notes-pane" aria-label="Notes list">
+  return <section className="notes-pane" aria-label="Notes list" aria-busy={refreshing}>
     <form className="notes-search" action="/dashboard" method="get">
       {archived && <input type="hidden" name="view" value="archived" />}
       <label className="sr-only" htmlFor="note-search">Search note titles</label>
@@ -55,6 +58,7 @@ export function NotesList({ page, selectedId, search, archived, cursor, ownerId,
     </form>
     <p className="notes-count">{search && search.length < 3 ? "Use at least 3 characters to search." : `${livePage.total} ${livePage.total === 1 ? "note" : "notes"}${search ? " found" : ""}`}</p>
     {liveStatus && <p className="notes-live-status" role="status">{liveStatus}</p>}
+    {refreshing && <p className="notes-live-status loading-inline" role="status"><DotsRing aria-hidden="true" />Updating your notes…</p>}
     <div className="note-list">{livePage.notes.length ? livePage.notes.map(note => <Link key={note.id} href={href(note.id, cursor)} className={`note-item ${note.id === selectedId ? "selected" : ""}`} aria-current={note.id === selectedId ? "true" : undefined}><h2>{note.title}</h2><p>{note.body.trim() || "No text yet."}</p>{note.source === "sms" && <span className="sms-provenance">SMS</span>}<time dateTime={note.updatedAt}>{new Date(note.updatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" })}</time></Link>) : <p className="note-list-empty">{search ? "No matching titles. Try another search." : archived ? "No archived notes. Archive a note to keep it here." : "No notes yet. Choose New note to save your first thought."}</p>}</div>
     {(cursor || livePage.nextCursor) && <nav className="pagination" aria-label="Notes pagination">{cursor ? <Link href={href()}>Back to first page</Link> : <span />}{livePage.nextCursor && <Link href={href(undefined, livePage.nextCursor)}>Next 25 →</Link>}</nav>}
   </section>;

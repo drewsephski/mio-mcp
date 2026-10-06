@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
+import { DotsRing } from "@/app/components/ui/dots-ring";
 import { useRouter } from "next/navigation";
 import { useAppwrite } from "@appwrite.io/react";
 import { Channel } from "appwrite";
@@ -8,6 +9,7 @@ export function ProductLiveRefresh({ ownerId, databaseId, section }: { ownerId: 
   const router = useRouter();
   const { realtime } = useAppwrite();
   const [status, setStatus] = useState("");
+  const [pending, startTransition] = useTransition();
   useEffect(() => {
     let disposed = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
@@ -22,7 +24,7 @@ export function ProductLiveRefresh({ ownerId, databaseId, section }: { ownerId: 
           return;
         }
         setStatus("");
-        router.refresh();
+        startTransition(() => router.refresh());
       }, 250);
     }
     realtime.subscribe(tables.map((table) => Channel.tablesdb(databaseId).table(table).row()), (event) => {
@@ -34,6 +36,6 @@ export function ProductLiveRefresh({ ownerId, databaseId, section }: { ownerId: 
     window.addEventListener("focus", refresh);
     window.addEventListener("online", refresh);
     return () => { disposed = true; clearTimeout(timer); unsubscribe?.(); window.removeEventListener("focus", refresh); window.removeEventListener("online", refresh); };
-  }, [databaseId, ownerId, realtime, router, section]);
-  return status ? <p className="notice product-live-status" role="status">{status}</p> : null;
+  }, [databaseId, ownerId, realtime, router, section, startTransition]);
+  return status || pending ? <p className="notice product-live-status" role="status">{pending ? <span className="loading-inline"><DotsRing aria-hidden="true" />Updating your view…</span> : status}</p> : null;
 }

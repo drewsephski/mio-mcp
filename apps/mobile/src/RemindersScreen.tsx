@@ -7,6 +7,7 @@ import { Button, Card, Feedback, Field, styles } from "./ui";
 export function RemindersScreen() {
   const [items, setItems] = useState<Reminder[]>([]), [cursor, setCursor] = useState<string | null>(null), [history, setHistory] = useState(false);
   const [selected, setSelected] = useState<Reminder | null>(null), [event, setEvent] = useState(""), [timezone, setTimezone] = useState(""), [offset, setOffset] = useState("15"), [message, setMessage] = useState("");
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true), [busy, setBusy] = useState(false), [error, setError] = useState("");
   const load = useCallback(async (after?: string) => {
     setLoading(true); setError("");
@@ -19,6 +20,7 @@ export function RemindersScreen() {
     return () => { alive = false; };
   }, [history]);
   async function mutate(reminder: Reminder, cancel: boolean) {
+    setCancellingId(cancel ? reminder.id : null);
     setBusy(true); setError("");
     try {
       if (cancel) await mio.cancelReminder(reminder.id, reminder.revision);
@@ -30,13 +32,13 @@ export function RemindersScreen() {
     <Field label="Reminder" value={message} onChange={setMessage} /><Field label="Event local time · YYYY-MM-DDTHH:MM" value={event} onChange={setEvent} />
     <Field label="Timezone · e.g. America/Chicago" value={timezone} onChange={setTimezone} /><Field label="Minutes before event" value={offset} onChange={setOffset} />
     <Text style={styles.muted}>Mio checks quiet hours and prevents changes when a text may already be on its way.</Text>
-    <Button title={busy ? "Saving…" : "Save reminder"} onPress={() => void mutate(selected, false)} disabled={busy} />
+    <Button title="Save reminder" loading={busy && !cancellingId} onPress={() => void mutate(selected, false)} disabled={busy} />
     <Button title="Discard edits and refresh" secondary onPress={() => { setSelected(null); void load(); }} disabled={busy} />
-  </Card> : <><Button title={history ? "Show upcoming" : "Show history"} secondary onPress={() => { setLoading(true); setError(""); setItems([]); setHistory(!history); }} disabled={loading} /><Button title="Refresh schedule" secondary onPress={() => void load()} disabled={loading || busy} />
+  </Card> : <><Button title={history ? "Show upcoming" : "Show history"} loading={loading} secondary onPress={() => { setLoading(true); setError(""); setItems([]); setHistory(!history); }} disabled={loading} /><Button title="Refresh schedule" loading={loading} secondary onPress={() => void load()} disabled={loading || busy} />
     {!loading && items.length === 0 && <Text style={styles.text}>{history ? "No past reminders." : "Text Mio what to remember and when."}</Text>}
     {items.map(reminder => <Card key={reminder.id}><Text style={styles.heading}>{reminder.message}</Text><Text style={styles.text}>{formatMoment(reminder.remindAt, reminder.timezone)}</Text><Text style={styles.muted}>{reminderStatus(reminder)} · {reminder.timezone}</Text>
       {["pending", "scheduled"].includes(reminder.status) && <><Button title="Edit reminder" secondary disabled={busy} onPress={() => { setSelected(reminder); setMessage(reminder.message); setEvent(localDateTime(reminder.eventAt, reminder.timezone)); setTimezone(reminder.timezone); setOffset(String(Math.round((Date.parse(reminder.eventAt) - Date.parse(reminder.remindAt)) / 60000))); }} />
-      <Button title="Cancel reminder" secondary disabled={busy} onPress={() => Alert.alert("Cancel this reminder?", "Mio will cancel the pending text.", [{ text: "Keep it", style: "cancel" }, { text: "Cancel reminder", style: "destructive", onPress: () => void mutate(reminder, true) }])} /></>}
-    </Card>)}{cursor && <Button title="More reminders" secondary onPress={() => void load(cursor)} disabled={loading} />}</>}
+      <Button title="Cancel reminder" loading={busy && cancellingId === reminder.id} secondary disabled={busy} onPress={() => Alert.alert("Cancel this reminder?", "Mio will cancel the pending text.", [{ text: "Keep it", style: "cancel" }, { text: "Cancel reminder", style: "destructive", onPress: () => void mutate(reminder, true) }])} /></>}
+    </Card>)}{cursor && <Button title="More reminders" loading={loading} secondary onPress={() => void load(cursor)} disabled={loading} />}</>}
   </>;
 }

@@ -44,10 +44,10 @@ export default function App() {
   return <SafeAreaProvider><SafeAreaView style={styles.root}><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
     <Text style={styles.heading}>mio</Text><Feedback error={error} loading={loading} />{!user ? <Card><Text style={styles.title}>Welcome back.</Text><Text style={styles.muted}>Sign in with your verified invited Mio account.</Text>
       <Field label="Email" value={email} onChange={setEmail} email /><Field label="Password" value={password} onChange={setPassword} secure />
-      <Button title="Sign in" onPress={() => void signIn()} disabled={loading || !email || !password} />
+      <Button title="Sign in" loading={loading} onPress={() => void signIn()} disabled={loading || !email || !password} />
       <Button title="Create or recover your invited account" secondary onPress={() => void Linking.openURL(`${webUrl}/auth`)} />
-    </Card> : <><Button title={phone?.connected ? "Text Mio" : "Connect your phone"} onPress={textMio} disabled={!phone} />
-      {tab === "Today" ? <TodayScreen /> : tab === "Notes" ? <NotesScreen /> : tab === "Reminders" ? <RemindersScreen /> : <SettingsScreen signOut={() => void signOut()} />}
+    </Card> : <><Button title={phone?.connected ? "Text Mio" : "Connect your phone"} onPress={textMio} disabled={!phone} loading={!phone && !error} />
+      {tab === "Today" ? <TodayScreen /> : tab === "Notes" ? <NotesScreen /> : tab === "Reminders" ? <RemindersScreen /> : <SettingsScreen signOut={() => void signOut()} signingOut={loading} />}
     </>}
   </ScrollView>{user && <View style={{ flexDirection: "row", borderTopColor: "#e5eaf1", borderTopWidth: 1 }}>{(["Today", "Notes", "Reminders", "Settings"] as const).map(t => <Pressable key={t} accessibilityRole="tab" accessibilityState={{ selected: tab === t }} onPress={() => setTab(t)} style={{ flex: 1, paddingVertical: 18, alignItems: "center" }}><Text style={[styles.muted, tab === t && { fontWeight: "700", color: "#2458d3" }]}>{t}</Text></Pressable>)}</View>}</SafeAreaView></SafeAreaProvider>;
 }
