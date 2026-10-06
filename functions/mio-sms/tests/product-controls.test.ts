@@ -48,7 +48,7 @@ test("pairing audits consent, consumes the token once and rejects old or unconse
   const old = await f.service.challenge("owner", "2026-10-06");
   const fresh = await f.service.challenge("owner", "2026-10-06");
   const expired = await f.service.inbound(f.message(`CONNECT ${old.code}`));
-  assert.ok("notice" in expired && /expired|replaced/i.test(expired.notice));
+  assert.ok("notice" in expired && typeof expired.notice === "string" && /expired|replaced/i.test(expired.notice));
   assert.equal(f.target.mock.callCount(), 0);
   assert.equal(f.rowsIn("sms_connections").length, 0);
   const challenge = f.rows.get("sms_challenges:owner")!;
@@ -73,7 +73,7 @@ test("old challenges without consent never create a Messaging target or binding"
   const code = "a".repeat(32);
   f.seed("sms_challenges", "owner", { tokenHash: digest(code), expiresAt: new Date(Date.now() + 60_000).toISOString() });
   const result = await f.service.inbound(f.message(`CONNECT ${code}`));
-  assert.ok("notice" in result && /terms/i.test(result.notice));
+  assert.ok("notice" in result && typeof result.notice === "string" && /terms/i.test(result.notice));
   assert.equal(f.target.mock.callCount(), 0);
   assert.equal(f.rowsIn("sms_connections").length, 0);
 });
