@@ -17,7 +17,8 @@
     "sms:verify": "node --experimental-strip-types scripts/verify-sms.mjs",
     "sms:evaluate": "MIO_LIVE_EVAL=1 node --experimental-strip-types --test functions/mio-sms/tests/evaluation.test.ts",
     "sms:configure-ai": "node scripts/configure-sms-ai.mjs",
-    "sms:verify-deployed": "node --experimental-strip-types scripts/verify-sms-deployed.mjs"
+    "sms:verify-deployed": "node --experimental-strip-types scripts/verify-sms-deployed.mjs",
+    "sms:configure-beta": "node scripts/configure-sms-beta.mjs"
   },
   "dependencies": {
     "@appwrite.io/react": "^0.1.0",

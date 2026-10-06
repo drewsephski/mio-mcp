@@ -4,6 +4,8 @@ import { z } from "zod";
 import { Temporal } from "@js-temporal/polyfill";
 import type { Attachments, Notes, Reminders } from "./generated.ts";
 import { digest } from "./inbound.ts";
+import { assertOutsideQuietHours } from "./preferences.ts";
+import type { UsageLimits } from "./usage.ts";
 import { localTimeSchema, reminderTimes, timezoneSchema } from "./time.ts";
 
 class ToolError extends Error {}
@@ -17,6 +19,8 @@ export function createMioTools(tables: TablesDB, options: {
   databaseId: string; ownerId: string; targetId: string; turnId: string; transactionId: string;
   timezone: string; defaultOffsetMinutes: number; now: Date; signal: AbortSignal;
   text: string; referenceNoteIds: string[];
+  preferences?: { quietHoursStart?: string | null; quietHoursEnd?: string | null };
+  limits?: Pick<UsageLimits, "maxActiveReminders" | "maxScheduledOutbound">;
 }) {
   const resource = (tableId: string) => ({ databaseId: options.databaseId, tableId, transactionId: options.transactionId });
   const permissions = [Permission.read(Role.user(options.ownerId)), Permission.update(Role.user(options.ownerId)), Permission.delete(Role.user(options.ownerId))];
@@ -61,6 +65,8 @@ export function createMioTools(tables: TablesDB, options: {
     try { times = reminderTimes(eventLocal, options.timezone, offsetMinutes, remindLocal); }
     catch { throw new ToolError("That local time is invalid or ambiguous during daylight saving; choose another time"); }
     if (Date.parse(times.remindAt) <= options.now.getTime() + 60_000) throw new ToolError("Choose a notification time at least one minute in the future");
+    try { assertOutsideQuietHours(times.remindAt, options.timezone, options.preferences ?? {}); }
+    catch (error) { throw new ToolError(error instanceof Error ? error.message : "Choose a time outside quiet hours"); }
     return times;
   }
   async function cancelLinked(noteId: string) {
@@ -150,6 +156,10 @@ export function createMioTools(tables: TablesDB, options: {
     }, true),
     createReminder: define("Create a requested SMS reminder, optionally linked to a note. Separate local event time from notification offset/time. Returns UTC times for precise confirmation.", z.object({ ...timing, noteId: id.optional(), message: z.string().trim().min(1).max(500) }).strict(), async input => {
       if (input.noteId) { requireRead(seenNotes, input.noteId); await getNote(input.noteId); }
+      if (options.limits) {
+        const active = await tables.listRows<Reminders>({ ...resource("reminders"), queries: [Query.equal("ownerId", options.ownerId), Query.equal("status", ["pending", "scheduled"]), Query.limit(1)], ttl: 0 });
+        if (active.total >= Math.min(options.limits.maxActiveReminders, options.limits.maxScheduledOutbound)) throw new ToolError("You have reached your active reminder limit. Cancel a reminder before adding another.");
+      }
       const times = future(input.eventLocal, input.offsetMinutes ?? options.defaultOffsetMinutes, input.remindLocal);
       const rowId = `r_${digest(`${options.turnId}:${sequence++}`).slice(0, 32)}`;
       return reminderView(await tables.createRow<Reminders>({ ...resource("reminders"), rowId, data: {

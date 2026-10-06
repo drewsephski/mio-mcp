@@ -24,3 +24,11 @@ test("auth body preserves multibyte text and accepts empty signout body", async 
   assert.equal(await readAuthBody(new Request("https://mio.test", { method: "POST", body })), body);
   assert.equal(await readAuthBody(new Request("https://mio.test", { method: "POST" })), "");
 });
+
+test("signup invitation cannot be bypassed with aliases or malformed body", async () => {
+  const { requireInvitedSignup } = await import("../lib/auth-request.ts");
+  assert.doesNotThrow(() => requireInvitedSignup('{"email":"DREW@example.com"}', ["drew@example.com"]));
+  assert.throws(() => requireInvitedSignup('{"email":"drew+other@example.com"}', ["drew@example.com"]), AuthRequestError);
+  assert.throws(() => requireInvitedSignup('{"email":"drew@example.com"}', []), AuthRequestError);
+  assert.throws(() => requireInvitedSignup('invalid', []), AuthRequestError);
+});

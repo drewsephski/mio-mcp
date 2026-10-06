@@ -38,3 +38,12 @@ export async function readAuthBody(request: Request): Promise<string> {
   }
   return new TextDecoder().decode(bytes);
 }
+
+export function requireInvitedSignup(body: string, allowedEmails: readonly string[]) {
+  let email: unknown;
+  try { email = (JSON.parse(body) as { email?: unknown }).email; }
+  catch { throw new AuthRequestError("Enter a valid email address.", 400); }
+  if (typeof email !== "string" || !allowedEmails.includes(email.trim().toLowerCase())) {
+    throw new AuthRequestError("Mio is in an invite-only beta. Sign up with your invited email address.", 403);
+  }
+}

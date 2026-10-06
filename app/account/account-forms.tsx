@@ -89,7 +89,7 @@ export function AuthFlowForm(props: AuthFlowFormProps) {
         </form>
       )}
       {result && <p className={`notice ${result.ok ? "notice-success" : "notice-error"}`} role={result.ok ? "status" : "alert"}>{result.message}</p>}
-      {result?.ok && <Link className="button button-primary w-full" href={props.mode === "verify" ? "/dashboard" : "/auth"}>{props.mode === "verify" ? "Continue to your notes" : "Back to sign in"}</Link>}
+      {result?.ok && <Link className="button button-primary w-full" href={props.mode === "verify" ? "/onboarding" : "/auth"}>{props.mode === "verify" ? "Continue to Mio" : "Back to sign in"}</Link>}
     </div>
   );
 }

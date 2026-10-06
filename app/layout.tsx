@@ -5,6 +5,7 @@ import { Providers } from "./providers";
 import "./globals.css";
 import "./styles/landing.css";
 import "./styles/workspace.css";
+import "./styles/product.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,8 +18,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: { default: "Mio — Your notes have a phone number", template: "%s · Mio" },
-  description: "Text a thought to Mio. Capture private notes by SMS and keep them close in your workspace.",
+  title: { default: "Mio — A personal assistant you can text", template: "%s · Mio" },
+  description: "Text thoughts, reminders, questions, or changes. Mio remembers the rest.",
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {

@@ -263,3 +263,54 @@ TablesDB reminder intent is atomic; native Messaging synchronization is a durabl
 reconciliation saga. A message already processing at the carrier cannot be
 recalled. Provider delivery evidence does not prove physical-device rendering.
 See [SMS.md](SMS.md) for lifecycle, deployment and operational details.
+
+## Web beta implementation — 2026-10-06
+
+This section covers the local beta changes after `1cd170f`. The earlier Cloud
+and carrier results above concern the previous deployed implementation; they do
+not verify these beta changes. No Cloud schema, Function, Site, Twilio routing,
+registration, account, invitation or outbound-message changes were performed.
+
+Local lint, TypeScript checking, SMS Function compilation, Next.js production
+build and `git diff --check` passed. The regular suite passed **104 tests** with
+the one paid evaluation skipped (105 total). Added coverage includes consent
+versioning, verified-email invite admission, owner-scoped companion APIs, optimistic reminder
+revisions, lost-response reconciliation, quiet hours, atomic per-user/global
+usage reservations, token accounting and HELP behavior. Regression tests cover
+revoked email verification, SMS-disabled reply suppression, reminder-event recursion and immediate recall
+of more than five pending native schedules on disconnect. The prepared Site
+archive also completed a local production build, including its shared invite
+policy import.
+
+The collaborative browser inspected the real local production landing and
+public legal pages at 390px. They show Drew Sepeczi and
+`drewsepeczi@gmail.com`; protected routes redirect signed-out visitors. A
+same-origin noninvited signup request returned 403 without creating an account.
+
+Authenticated browser QA used an isolated copy of the production build and an
+in-memory Appwrite API fixture. All five companion routes returned fixture
+content. Today, Notes, Reminders, Activity, Settings and onboarding were inspected
+at 390px, with Activity and Reminders also inspected at 1280px. Long titles,
+messages and transcripts wrapped without horizontal overflow. Reminder editing
+saved the new message and closed its editor; cancellation removed the reminder
+from Upcoming and displayed it in History. Preference saving persisted a new
+default offset. Onboarding moved from Meet Mio to Connect Phone, with consent
+initially unchecked and Open Messages disabled until consent was selected.
+The browser did not open Messages or send a pairing text.
+
+These fixtures made no Cloud requests and cannot verify Cloud permissions,
+Realtime, native Messaging reconciliation or handset behavior. Realtime was
+intentionally unavailable, and the app displayed its Refresh fallback. Unit and
+integration tests exercise the real business logic against isolated persistence;
+the browser fixture verifies rendering and interaction only. Live two-account
+and phone acceptance remains required after the activation steps in
+[BETA.md](BETA.md).
+
+Independent review reproduced invitation impersonation through an unverified
+allowlisted email. The fix requires verified email ownership at pairing, API
+admission and every assistant/send revalidation. Regression tests reject
+unverified token requests, pairing after verification loss, companion calls and
+queued AI/replies after verification loss. Onboarding reuses the existing email
+verification flow before phone setup. An unverified local fixture redirected
+from Today to the verification screen at 390px, with no pairing action or
+horizontal overflow. No verification email was sent during QA.

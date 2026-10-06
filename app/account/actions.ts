@@ -105,6 +105,7 @@ export async function verifyEmail(formData: FormData): Promise<AccountActionResu
     const account = await publicAccount();
     await account.updateEmailVerification(input.data);
     revalidatePath("/dashboard");
+    revalidatePath("/onboarding");
     return { ok: true, message: "Your email address is verified." };
   } catch (error) {
     return accountError(error, "This verification link may have expired or already been used. Sign in and request a new link.");

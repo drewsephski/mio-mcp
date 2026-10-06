@@ -246,3 +246,9 @@ The CSS three-bar mark and Geist wordmark are the shipped Mio identity. The land
 - **Don't** treat a landing example's tilt or composition as a global container rule.
 
 **Not canonized:** the inherited scaffold favicon is retained asset provenance, not Mio's reusable identity; the loaded but unused mono face and one-off miniature demo values are not reusable typography tokens. No unresolved craft-floor refusal was promoted into a system rule.
+
+## Web companion extension
+
+The web beta adds Today, Notes, Reminders, Activity and Settings to the existing crisp-white, compact blue direction. A shared sidebar becomes an icon rail on tablets and five labeled controls on phones. Today pairs a quiet Mio prompt with upcoming reminders and recent memory. Reminder rows prioritize exact notification time, event time, timezone and truthful scheduling state. Activity shows the recorded conversation and available owned references; it does not infer actions or historical schedule changes that were never recorded.
+
+Connection onboarding uses two simple steps: meet the assistant, then optional explicit SMS consent and an Open Messages action. Manual connection text is inside a fallback disclosure. Realtime plus bounded polling updates pairing status; connected users can text Mio or open Today. Settings exposes future reminder time preferences, quiet hours, and owner-only UTC usage counts. Long content wraps, edit state survives realtime updates, and uncertain mutations require a refresh.

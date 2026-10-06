@@ -7,9 +7,9 @@ entities rather than creating another note.
 
 ## Connect and use
 
-Connect from `/settings/sms` using the existing one-time `connect …` text.
+New users connect from `/onboarding`; `/settings/sms` manages existing connections. The authenticated user explicitly accepts the SMS disclosure before preparing the one-time `CONNECT …` text.
 Codes have 128 bits of randomness, expire after 15 minutes, rotate on regeneration,
-and are stored only as SHA-256 hashes. Consumption and phone binding commit
+and are stored only as SHA-256 hashes. Challenge and connection rows retain consent version and acceptance time. Pre-beta challenges without consent must be regenerated. Consumption and phone binding commit
 in one transaction. Each phone has one account, with an owned Appwrite SMS
 target pinned to the existing Twilio provider.
 
@@ -53,9 +53,7 @@ STOP disconnects the account and cancels pending reminders. START never rebinds
 without a new connection code. Authenticated settings endpoints still validate
 Appwrite JWTs with `Account.get`; no supplied owner ID is trusted.
 
-The shared number retains Vapi voice routing and the existing unconnected-sender
-SMS fallback, signed for its exact upstream URL. There is no duplicate fan-out.
-Do not change voice or status callbacks when deploying this feature.
+All users share one dedicated Mio number. The default dedicated mode does not forward unknown texts to Vapi. `MIO_NUMBER_MODE=legacy-shared` temporarily enables the old signed SMS fallback for the development number; do not publicly launch in that mode. This code does not buy a number or alter Twilio voice/status callbacks. Configure Advanced Opt-Out on the dedicated Messaging Service: when Twilio labels a HELP callback, it owns the response and Mio returns empty TwiML. Plain HELP without that metadata receives a bounded application response.
 
 The function dynamic key keeps the existing row/user/target/message scopes.
 No persistent privileged key or unrestricted database tool reaches Luna.
@@ -87,7 +85,7 @@ responses roll back the whole turn. Known entity IDs cannot appear in replies.
   references. The prompt loads only six turns. Retrieval tools return bounded
   results; full notes are fetched only when needed.
 - `sms_conversations`: owner-readable, server-write-only timezone, default offset,
-  and a fenced owner lease. It serializes turns and reminder reconciliation.
+  quiet hours, SMS enablement, disabled future proactive/digest flags, and a fenced owner lease. It serializes turns and reminder reconciliation.
 - `sms_jobs`: server-only input queue, payload fingerprint, retry count and next
   attempt. SID is the deterministic row ID. Successful/terminal jobs erase the
   duplicate body copy; durable turn history remains separate.
@@ -156,6 +154,7 @@ pnpm sms:build
 pnpm build
 appwrite push table --all --force
 pnpm sms:configure-ai
+pnpm sms:configure-beta -- --apply
 pnpm sms:deploy
 pnpm sms:verify
 pnpm appwrite:verify
