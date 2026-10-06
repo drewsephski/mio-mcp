@@ -13,5 +13,8 @@ const lock = readFileSync("pnpm-lock.yaml", "utf8");
 const importer = lock.match(/\n  functions\/mio-sms:\n([\s\S]*?)(?=\n\S|\n  [^ ]|$)/)?.[1];
 if (!importer) throw new Error("SMS workspace lockfile importer is missing");
 writeFileSync(resolve(destination, "pnpm-lock.yaml"), lock.replace(/importers:\n[\s\S]*?(?=\npackages:)/, `importers:\n\n  .:\n${importer}\n`));
-writeFileSync(resolve(destination, "pnpm-workspace.yaml"), "packages:\n  - \".\"\n");
+// Frozen installation checks the override configuration even when an override
+// targets an unrelated workspace. Preserve it verbatim from this same lock.
+const overrides = lock.match(/^overrides:\n(?:[ \t]+.*\n)*/m)?.[0] ?? "";
+writeFileSync(resolve(destination, "pnpm-workspace.yaml"), `packages:\n  - "."\n${overrides}`);
 console.log("Prepared SMS Function source and locked dependencies; no secrets included.");

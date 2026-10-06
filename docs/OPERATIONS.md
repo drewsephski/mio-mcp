@@ -20,7 +20,8 @@ paid Luna evaluation remains opt-in via `pnpm sms:evaluate`.
 
 `.github/workflows/ci.yml` runs on every PR and main push, with read-only GitHub
 permissions, frozen dependencies, configuration consistency, lint, TypeScript,
-all deterministic tests, Function/web builds, and mobile typecheck/export. Live
+all deterministic tests, Function/web builds, isolated frozen install/build of the exact deployment
+archives, and mobile typecheck/export. Live
 checks run only through explicitly invoked local operational commands. Require
 `Lint, types, tests and production builds` in branch protection in GitHub; the
 repository cannot enforce that organization setting from a workflow file.

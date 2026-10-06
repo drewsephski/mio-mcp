@@ -37,7 +37,7 @@ try {
   expected = prepareRelease();
   Object.assign(evidence, { releaseId: expected.releaseId, schemaVersion: expected.schemaVersion, schemaDigest: expected.schemaDigest, previousFunctionId: plan.fn.deploymentId, previousSiteId: plan.site.deploymentId });
   await record({ stage: "local_validation" });
-  for (const script of ["check:config", "lint", "typecheck", "test", "sms:build", "build"]) run(script);
+  for (const script of ["check:config", "lint", "typecheck", "test", "sms:build", "build", "check:archives"]) run(script);
   if (prepareRelease().releaseId !== expected.releaseId) throw new Error("Source changed during local validation");
   if (process.argv.includes("--preflight")) { await record({ stage: "preflight_complete" }); console.log("Preflight passed. No schema, variables or deployments changed."); process.exitCode = 0; }
   else {

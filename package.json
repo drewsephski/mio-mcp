@@ -31,7 +31,8 @@
     "mobile:dev": "pnpm --dir apps/mobile start",
     "mobile:ios": "pnpm --dir apps/mobile ios",
     "mobile:typecheck": "pnpm --dir apps/mobile typecheck",
-    "mobile:export": "pnpm --dir apps/mobile export"
+    "mobile:export": "pnpm --dir apps/mobile export",
+    "check:archives": "node scripts/check-archives.mjs"
   },
   "dependencies": {
     "@appwrite.io/react": "^0.1.0",
