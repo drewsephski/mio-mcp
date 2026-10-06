@@ -4,12 +4,17 @@ import { createAgent, type AgentRunner } from "./agent.ts";
 import type { Notes, Reminders, SmsConnections, SmsConversations, SmsJobs, SmsReceipts, SmsTurns } from "./generated.ts";
 import { payloadHash, SmsError, type Inbound } from "./inbound.ts";
 import { createMioTools } from "./tools.ts";
+import { hasVerifiedBetaAccess } from "./beta.ts";
+import { parsePreferences } from "./preferences.ts";
+import { UsageLimitError, type createUsageControls } from "./usage.ts";
 import { timezoneSchema } from "./time.ts";
 
 export type AssistantConfig = {
   databaseId: string; timezone?: string; defaultOffsetMinutes?: number; agent?: AgentRunner;
   apiKey?: string; model?: string; now?: () => Date; timeoutMs?: number;
   log?: (event: string) => void;
+  invitedEmails?: readonly string[];
+  usage?: ReturnType<typeof createUsageControls>;
   // Local Cloud verifier only; never populated from an HTTP request. Production
   // event/schedule workers do not select these draft-only fixture jobs.
   verificationMode?: boolean;
@@ -36,7 +41,7 @@ export function createAssistant(tables: TablesDB, users: Users, messaging: Messa
     try {
       await tables.createRow({ ...resource("sms_conversations"), rowId: ownerId, data: {
         ownerId, timezone: preferred.success ? preferred.data : defaultTimezone, defaultOffsetMinutes,
-        leaseToken: "", leaseUntil: new Date(0).toISOString(),
+        leaseToken: "", leaseUntil: new Date(0).toISOString(), quietHoursStart: "", quietHoursEnd: "", smsEnabled: true, proactiveMessagesEnabled: false, dailyDigestEnabled: false,
       }, permissions: [Permission.read(Role.user(ownerId))] });
     } catch (error) { if (!conflict(error)) throw error; }
   }
@@ -104,7 +109,8 @@ export function createAssistant(tables: TablesDB, users: Users, messaging: Messa
     try { connection = await tables.getRow<SmsConnections>({ ...resource("sms_connections"), rowId: job.ownerId, transactionId }); }
     catch (error) { if (missing(error)) return false; throw error; }
     const user = await users.get({ userId: job.ownerId });
-    if (!user.status || connection.phone !== job.phone || connection.targetId !== job.targetId) return false;
+    const conversation = await optional<SmsConversations>("sms_conversations", job.ownerId);
+    if (!user.status || !hasVerifiedBetaAccess(user, config.invitedEmails) || conversation?.smsEnabled === false || connection.phone !== job.phone || connection.targetId !== job.targetId) return false;
     if (transactionId) await tables.updateRow({ ...resource("sms_connections"), rowId: job.ownerId, data: { phone: connection.phone }, transactionId });
     return true;
   }
@@ -117,6 +123,18 @@ export function createAssistant(tables: TablesDB, users: Users, messaging: Messa
     }
     const attempts = job.attempts + 1;
     await tables.updateRow({ ...resource("sms_jobs"), rowId: job.$id, data: { attempts, nextAttemptAt: new Date(now().getTime() + attempts * 60_000).toISOString() } });
+    let aiReservation: { reservationId: string; created: boolean } | undefined;
+    if (config.usage) {
+      try {
+        aiReservation = await config.usage.reserve({ ownerId: job.ownerId, operationId: `${job.$id}:attempt:${attempts}`, kind: "ai" });
+        // A duplicate or lost reservation response must never replay a billable call.
+        if (!aiReservation.created) return;
+      } catch (error) {
+        if (!(error instanceof UsageLimitError)) throw error;
+        await tables.updateRow({ ...resource("sms_jobs"), rowId: job.$id, data: { attempts: job.attempts, nextAttemptAt: new Date(now().getTime() + 3600_000).toISOString() } });
+        return;
+      }
+    }
     const transaction = await tables.createTransaction({ ttl: 120 });
     try {
       const conversation = await fence(job.ownerId, token, transaction.$id);
@@ -126,8 +144,9 @@ export function createAssistant(tables: TablesDB, users: Users, messaging: Messa
       const signal = AbortSignal.timeout(config.timeoutMs ?? 45_000);
       const mio = createMioTools(tables, { databaseId: config.databaseId, ownerId: job.ownerId, targetId: job.targetId, turnId: job.$id,
         transactionId: transaction.$id, timezone: conversation.timezone, defaultOffsetMinutes: conversation.defaultOffsetMinutes, now: now(), signal,
-        text: job.body, referenceNoteIds: recent.rows[0]?.noteIds ?? [] });
+        text: job.body, referenceNoteIds: recent.rows[0]?.noteIds ?? [], preferences: parsePreferences(conversation), limits: config.usage?.limits });
       const reply = await agent({ text: job.body, timezone: conversation.timezone, defaultOffsetMinutes: conversation.defaultOffsetMinutes, now: now(),
+        observeUsage: config.usage && aiReservation ? metrics => config.usage!.reportUsage(aiReservation.reservationId, metrics) : undefined,
         history: recent.rows.reverse().map(turn => ({ userText: turn.userText, reply: turn.reply, noteIds: turn.noteIds, reminderIds: turn.reminderIds })), tools: mio.tools, signal });
       await mio.assertHealthy();
       if (!reply.trim() || reply.length > 700) throw new Error("Invalid reply");
@@ -191,7 +210,8 @@ export function createAssistant(tables: TablesDB, users: Users, messaging: Messa
     const user = await users.get({ userId: row.ownerId });
     const note = row.noteId ? await optional<Notes>("notes", row.noteId) : null;
     const noteRevoked = !!row.noteId && (!note || note.ownerId !== row.ownerId || note.archived || note.completed);
-    const revoked = !user.status || !connection || connection.targetId !== row.targetId || noteRevoked;
+    const conversation = await optional<SmsConversations>("sms_conversations", row.ownerId);
+    const revoked = !user.status || !hasVerifiedBetaAccess(user, config.invitedEmails) || conversation?.smsEnabled === false || !connection || connection.targetId !== row.targetId || noteRevoked;
     const update = async (data: Partial<Reminders>) => {
       const transaction = await tables.createTransaction({ ttl: 60 });
       try {
@@ -224,6 +244,7 @@ export function createAssistant(tables: TablesDB, users: Users, messaging: Messa
       await update({ status: "failed", syncPending: false, lastError: "notification_time_passed" }); return;
     }
     if (!message) {
+      await config.usage?.reserve({ ownerId: row.ownerId, operationId: row.messageId, kind: "outbound" });
       try { message = await messaging.createSMS({ messageId: row.messageId, content: row.message, targets: [row.targetId], draft: true }); }
       catch (error) { message = await getMessage(row.messageId); if (!message) throw error; }
     }
@@ -238,7 +259,7 @@ export function createAssistant(tables: TablesDB, users: Users, messaging: Messa
       const activeNote = row.noteId ? await optional<Notes>("notes", row.noteId) : null;
       const activeUser = await users.get({ userId: row.ownerId });
       if (current.status === "canceled" || current.messageId !== row.messageId || current.revision !== row.revision ||
-        !activeUser.status || !activeConnection || activeConnection.targetId !== row.targetId || lease.leaseToken !== token || Date.parse(lease.leaseUntil) <= now().getTime() ||
+        !activeUser.status || !hasVerifiedBetaAccess(activeUser, config.invitedEmails) || lease.smsEnabled === false || !activeConnection || activeConnection.targetId !== row.targetId || lease.leaseToken !== token || Date.parse(lease.leaseUntil) <= now().getTime() ||
         (row.noteId && (!activeNote || activeNote.ownerId !== row.ownerId || activeNote.archived || activeNote.completed))) {
         await removeScheduled(row.messageId); throw new Error("Reminder authorization changed");
       }
@@ -276,5 +297,5 @@ export function createAssistant(tables: TablesDB, users: Users, messaging: Messa
     }
     return receipt;
   }
-  return { enqueue, processPending, reconcileReminders, readyReply };
+  return { enqueue, processPending, reconcileReminders, readyReply, ensureConversation, acquire, fence, release };
 }

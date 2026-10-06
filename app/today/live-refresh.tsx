@@ -1,0 +1,39 @@
+"use client";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAppwrite } from "@appwrite.io/react";
+import { Channel } from "appwrite";
+
+export function ProductLiveRefresh({ ownerId, databaseId, section }: { ownerId: string; databaseId: string; section: string }) {
+  const router = useRouter();
+  const { realtime } = useAppwrite();
+  const [status, setStatus] = useState("");
+  useEffect(() => {
+    let disposed = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let unsubscribe: (() => void) | undefined;
+    const tables = section === "today" ? ["reminders", "notes", "sms_conversations"] : section === "activity" ? ["sms_turns"] : section === "reminders" ? ["reminders"] : ["sms_conversations", "sms_connections"];
+    function refresh() {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        if (disposed) return;
+        if (document.querySelector('[data-companion-editing="true"]')) {
+          setStatus("Mio changed while you were editing. Finish your change, then refresh to see the latest view.");
+          return;
+        }
+        setStatus("");
+        router.refresh();
+      }, 250);
+    }
+    realtime.subscribe(tables.map((table) => Channel.tablesdb(databaseId).table(table).row()), (event) => {
+      if ((event.payload as { ownerId?: string }).ownerId === ownerId) refresh();
+    }).then((subscription) => {
+      if (disposed) subscription.unsubscribe();
+      else unsubscribe = () => { subscription.unsubscribe(); };
+    }).catch(() => { if (!disposed) setStatus("Live updates are paused. Use Refresh to check the latest view."); });
+    window.addEventListener("focus", refresh);
+    window.addEventListener("online", refresh);
+    return () => { disposed = true; clearTimeout(timer); unsubscribe?.(); window.removeEventListener("focus", refresh); window.removeEventListener("online", refresh); };
+  }, [databaseId, ownerId, realtime, router, section]);
+  return status ? <p className="notice product-live-status" role="status">{status}</p> : null;
+}

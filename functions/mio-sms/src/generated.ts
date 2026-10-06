@@ -26,11 +26,15 @@ export type SmsConnections = Models.Row & {
     ownerId: string;
     phone: string;
     targetId: string;
+    consentVersion?: string | null;
+    consentedAt?: string | null;
 }
 
 export type SmsChallenges = Models.Row & {
     tokenHash: string;
     expiresAt: string;
+    consentVersion?: string | null;
+    consentedAt?: string | null;
 }
 
 export type SmsReceipts = Models.Row & {
@@ -61,6 +65,11 @@ export type SmsConversations = Models.Row & {
     defaultOffsetMinutes: number;
     leaseToken: string;
     leaseUntil: string;
+    quietHoursStart?: string | null;
+    quietHoursEnd?: string | null;
+    smsEnabled?: boolean | null;
+    proactiveMessagesEnabled?: boolean | null;
+    dailyDigestEnabled?: boolean | null;
 }
 
 export type SmsTurns = Models.Row & {

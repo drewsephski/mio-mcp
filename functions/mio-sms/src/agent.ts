@@ -6,6 +6,7 @@ export type AgentInput = {
   text: string; timezone: string; now: Date; defaultOffsetMinutes: number;
   history: { userText: string; reply: string; noteIds: string[]; reminderIds: string[] }[];
   tools: ToolSet; signal: AbortSignal;
+  observeUsage?: (usage: { inputTokens: number; outputTokens: number }) => Promise<void>;
 };
 export type AgentRunner = (input: AgentInput) => Promise<string>;
 
@@ -44,6 +45,12 @@ Use setTimezone only when the user gives their timezone. Keep replies one or two
 Recent conversation with entity references (oldest first):\n${JSON.stringify(input.history)}`,
       prompt: input.text,
     });
+    // Record observed usage even when the completed generation has an invalid
+    // plan. Missing provider metrics remain unknown; reservations stay charged.
+    const { inputTokens, outputTokens } = result.totalUsage;
+    if (inputTokens !== undefined && outputTokens !== undefined) {
+      await input.observeUsage?.({ inputTokens, outputTokens });
+    }
     // A malformed tool call is an incomplete plan, even if the model follows
     // it with plausible prose. Retry the entire uncommitted turn rather than
     // persisting an edited note alongside a reminder it failed to update.

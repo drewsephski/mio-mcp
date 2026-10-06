@@ -2,9 +2,11 @@ import { randomBytes } from "node:crypto";
 import { AppwriteException, Messaging, MessagingProviderType, Permission, Query, Role, TablesDB, Users, type Models } from "node-appwrite";
 import type { Reminders, SmsChallenges, SmsConnections, SmsConversations, SmsReceipts } from "./generated.ts";
 import { connectionCode, digest, payloadHash, SmsError, type Inbound } from "./inbound.ts";
+import { createCompanionService } from "./companion.ts";
+import { hasVerifiedBetaAccess } from "./beta.ts";
 import { createAssistant, type AssistantConfig } from "./assistant.ts";
 
-export function createSmsService(tables: TablesDB, users: Users, messaging: Messaging, config: AssistantConfig & { providerId: string; phone: string }) {
+export function createSmsService(tables: TablesDB, users: Users, messaging: Messaging, config: AssistantConfig & { providerId: string; phone: string; supportEmail?: string }) {
   const resource = (tableId: string) => ({ databaseId: config.databaseId, tableId });
   const connections = resource("sms_connections");
   const challenges = resource("sms_challenges");
@@ -30,12 +32,15 @@ export function createSmsService(tables: TablesDB, users: Users, messaging: Mess
       timezone: conversation?.timezone ?? config.timezone ?? "America/Chicago", defaultOffsetMinutes: conversation?.defaultOffsetMinutes ?? config.defaultOffsetMinutes ?? 15 };
   }
 
-  async function challenge(ownerId: string) {
+  async function challenge(ownerId: string, consentVersion: string) {
+    if (consentVersion !== "2026-10-06") throw new SmsError("Agree to the current SMS terms before connecting.", 400);
+    const user = await users.get({ userId: ownerId });
+    if (!hasVerifiedBetaAccess(user, config.invitedEmails)) throw new SmsError("Verify your invited email address before using Mio SMS.", 403);
     if (await optionalRow<SmsConnections>("sms_connections", ownerId)) throw new SmsError("Disconnect your current phone before connecting another.", 409);
     const code = randomBytes(16).toString("hex");
     const expiresAt = new Date(Date.now() + 15 * 60_000).toISOString();
     // Rotating this one server-only row invalidates every older code.
-    await tables.upsertRow({ ...challenges, rowId: ownerId, data: { tokenHash: digest(code), expiresAt }, permissions: [] });
+    await tables.upsertRow({ ...challenges, rowId: ownerId, data: { tokenHash: digest(code), expiresAt, consentVersion, consentedAt: new Date().toISOString() }, permissions: [] });
     return { code, expiresAt, mioPhone: config.phone };
   }
 
@@ -60,14 +65,24 @@ export function createSmsService(tables: TablesDB, users: Users, messaging: Mess
       } while (cursor);
       try {
         await tables.getRow({ ...resource("sms_conversations"), rowId: ownerId, transactionId: transaction.$id });
-        await tables.updateRow({ ...resource("sms_conversations"), rowId: ownerId, data: { leaseToken: `revoked_${randomBytes(12).toString("hex")}`, leaseUntil: new Date(0).toISOString() }, transactionId: transaction.$id });
+        await tables.updateRow({ ...resource("sms_conversations"), rowId: ownerId, data: { smsEnabled: false, leaseToken: `revoked_${randomBytes(12).toString("hex")}`, leaseUntil: new Date(0).toISOString() }, transactionId: transaction.$id });
       } catch (error) { if (!(error instanceof AppwriteException && error.code === 404)) throw error; }
       await tables.updateTransaction({ transactionId: transaction.$id, commit: true });
     } catch (error) {
       await tables.updateTransaction({ transactionId: transaction.$id, rollback: true }).catch(() => {});
       throw error;
     }
-    await assistant.reconcileReminders(ownerId);
+    // Cancel every outstanding native schedule now, rather than leaving all
+    // but the first five for subsequent minute workers. Failed recalls retain
+    // syncPending and remain recoverable by the normal durable reconciler.
+    let cursor: string | undefined;
+    do {
+      const canceled = await tables.listRows<Reminders>({ ...resource("reminders"), queries: [Query.equal("ownerId", ownerId), Query.equal("status", "canceled"), Query.equal("syncPending", true), Query.orderAsc("$id"), Query.limit(100), ...(cursor ? [Query.cursorAfter(cursor)] : [])], ttl: 0 });
+      for (let index = 0; index < canceled.rows.length; index += 5) {
+        await assistant.reconcileReminders(ownerId, canceled.rows.slice(index, index + 5).map(row => row.$id));
+      }
+      cursor = canceled.rows.length === 100 ? canceled.rows.at(-1)?.$id : undefined;
+    } while (cursor);
   }
 
   async function queueReply(receipt: SmsReceipts) {
@@ -75,7 +90,8 @@ export function createSmsService(tables: TablesDB, users: Users, messaging: Mess
     if (receipt.deliveryMode === "draft" && !config.verificationMode) return;
     const connection = await optionalRow<SmsConnections>("sms_connections", receipt.ownerId);
     const user = await users.get({ userId: receipt.ownerId });
-    if (!connection || connection.phone !== receipt.phone || connection.targetId !== receipt.targetId || !user.status) {
+    const preferences = await optionalRow<SmsConversations>("sms_conversations", receipt.ownerId);
+    if (preferences?.smsEnabled === false || !connection || !hasVerifiedBetaAccess(user, config.invitedEmails) || connection.phone !== receipt.phone || connection.targetId !== receipt.targetId || !user.status) {
       // Revoked bindings must never receive pending/private confirmations.
       await tables.updateRow({ ...receipts, rowId: receipt.$id, data: { replyQueued: true } });
       return;
@@ -87,10 +103,12 @@ export function createSmsService(tables: TablesDB, users: Users, messaging: Mess
     if (needsRecheck) {
       const current = await optionalRow<SmsConnections>("sms_connections", receipt.ownerId);
       const currentUser = await users.get({ userId: receipt.ownerId });
-      if (!current || current.phone !== receipt.phone || current.targetId !== receipt.targetId || !currentUser.status) {
+      const currentPreferences = await optionalRow<SmsConversations>("sms_conversations", receipt.ownerId);
+      if (currentPreferences?.smsEnabled === false || !hasVerifiedBetaAccess(currentUser, config.invitedEmails) || !current || current.phone !== receipt.phone || current.targetId !== receipt.targetId || !currentUser.status) {
         await tables.updateRow({ ...receipts, rowId: receipt.$id, data: { replyQueued: true } }); return;
       }
     }
+    await config.usage?.reserve({ ownerId: receipt.ownerId, operationId: receipt.$id, kind: "outbound" });
     try {
       await messaging.createSMS({ messageId: receipt.$id, content: receipt.reply, targets: [receipt.targetId] });
     } catch (error) {
@@ -130,7 +148,8 @@ export function createSmsService(tables: TablesDB, users: Users, messaging: Mess
     const token = result.rows[0];
     if (!token || new Date(token.expiresAt).getTime() <= Date.now()) return { handled: true, notice: "That code has expired or been replaced. Send the current connection text from Mio." };
     const user = await users.get({ userId: token.$id });
-    if (!user.status) throw new SmsError("Account unavailable", 403);
+    if (!user.status || !hasVerifiedBetaAccess(user, config.invitedEmails)) throw new SmsError("Verify your invited email address before using Mio SMS.", 403);
+    if (token.consentVersion !== "2026-10-06" || !token.consentedAt) return { handled: true, notice: "Open Mio and agree to the SMS terms to get a fresh connection text." };
     if (await byPhone(message.From) || await optionalRow<SmsConnections>("sms_connections", user.$id)) {
       return { handled: true, notice: "This phone or account is already connected. Disconnect it in Mio first." };
     }
@@ -149,12 +168,14 @@ export function createSmsService(tables: TablesDB, users: Users, messaging: Mess
       if (existing.targets.length !== 1) return { handled: true, notice: "Mio couldn't connect this phone. Check your existing Mio account or try a different phone." };
       targetId = existing.targets[0].$id;
     }
-    await commitReceipt(message, user.$id, targetId, "Connected to Mio. Text me thoughts, questions, or reminders. Reply STOP to disconnect.", async (transactionId) => {
+    await commitReceipt(message, user.$id, targetId, "Connected to Mio. Text thoughts, questions, or reminders. Message frequency varies. Msg & data rates may apply. Reply STOP to stop, HELP for help.", async (transactionId) => {
       // The delete is staged first. A rotated/consumed token conflicts at commit.
       const current = await tables.getRow<SmsChallenges>({ ...challenges, rowId: user.$id, transactionId });
       if (current.tokenHash !== token.tokenHash || new Date(current.expiresAt).getTime() <= Date.now()) throw new SmsError("Connection code expired", 409);
       await tables.deleteRow({ ...challenges, rowId: user.$id, transactionId });
-      await tables.createRow({ ...connections, rowId: user.$id, data: { ownerId: user.$id, phone: message.From, targetId }, permissions: readOnly(user.$id), transactionId });
+      const conversation = await optionalRow<SmsConversations>("sms_conversations", user.$id);
+      if (conversation) await tables.updateRow({ ...resource("sms_conversations"), rowId: user.$id, data: { smsEnabled: true }, transactionId });
+      await tables.createRow({ ...connections, rowId: user.$id, data: { ownerId: user.$id, phone: message.From, targetId, consentVersion: token.consentVersion, consentedAt: token.consentedAt }, permissions: readOnly(user.$id), transactionId });
     });
     return { handled: true };
   }
@@ -166,19 +187,22 @@ export function createSmsService(tables: TablesDB, users: Users, messaging: Mess
       await queueReply(previous);
       return { handled: true };
     }
+    const bound = await byPhone(message.From);
+    await config.usage?.reserve({ ownerId: bound?.ownerId ?? `anon_${digest(message.From).slice(0, 30)}`, operationId: message.MessageSid, kind: "inbound" });
     const code = connectionCode(message.Body);
     if (code) return connect(message, code);
     if (/^connect\b/i.test(message.Body.trim())) return { handled: true, notice: "Copy the full connection text from Mio and send it here." };
     const connection = await byPhone(message.From);
     if (!connection) return { handled: false };
     const user = await users.get({ userId: connection.ownerId });
-    if (!user.status) return { handled: true };
+    const conversation = await optionalRow<SmsConversations>("sms_conversations", user.$id);
+    if (!user.status || !hasVerifiedBetaAccess(user, config.invitedEmails) || conversation?.smsEnabled === false) return { handled: true };
     const isHelp = message.OptOutType?.toUpperCase() === "HELP" || /^help$/i.test(message.Body.trim());
     if (!isHelp && message.Body.trim()) {
       await assistant.enqueue(message, connection);
       return { handled: true };
     }
-    const reply = isHelp ? "I'm Mio. Text me thoughts to remember, ask about your notes, or request a reminder. Tell me your timezone for local times. Reply STOP to disconnect."
+    const reply = isHelp ? `Mio help: text thoughts, questions, or reminders. Support: ${config.supportEmail ?? "drewsepeczi@gmail.com"}. Reply STOP to stop. Msg & data rates may apply.`
       : "Send a text with your request. Add attachments in Mio; I can only read text here.";
     await commitReceipt(message, connection.ownerId, connection.targetId, reply, async (transactionId) => {
       // Touching the binding makes a concurrent disconnect conflict with capture.
@@ -202,5 +226,6 @@ export function createSmsService(tables: TablesDB, users: Users, messaging: Mess
     const replies = await retryReplies();
     return { ...jobs, reminderFailures: reminders.failures, replyFailures: replies.failures };
   }
-  return { status, challenge, disconnect, inbound, byPhone, retryReplies, work };
+  const companion = createCompanionService(tables, users, assistant, config, { disconnect });
+  return { status, challenge, disconnect, inbound, byPhone, retryReplies, work, companion };
 }

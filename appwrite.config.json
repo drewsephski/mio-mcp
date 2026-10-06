@@ -265,6 +265,19 @@
           "required": true,
           "array": false,
           "size": 36
+        },
+        {
+          "key": "consentVersion",
+          "type": "varchar",
+          "required": false,
+          "array": false,
+          "size": 32
+        },
+        {
+          "key": "consentedAt",
+          "type": "datetime",
+          "required": false,
+          "array": false
         }
       ],
       "indexes": [
@@ -299,6 +312,19 @@
           "key": "expiresAt",
           "type": "datetime",
           "required": true,
+          "array": false
+        },
+        {
+          "key": "consentVersion",
+          "type": "varchar",
+          "required": false,
+          "array": false,
+          "size": 32
+        },
+        {
+          "key": "consentedAt",
+          "type": "datetime",
+          "required": false,
           "array": false
         }
       ],
@@ -524,6 +550,43 @@
           "type": "datetime",
           "required": true,
           "array": false
+        },
+        {
+          "key": "quietHoursStart",
+          "type": "varchar",
+          "required": false,
+          "array": false,
+          "size": 5,
+          "default": ""
+        },
+        {
+          "key": "quietHoursEnd",
+          "type": "varchar",
+          "required": false,
+          "array": false,
+          "size": 5,
+          "default": ""
+        },
+        {
+          "key": "smsEnabled",
+          "type": "boolean",
+          "required": false,
+          "array": false,
+          "default": true
+        },
+        {
+          "key": "proactiveMessagesEnabled",
+          "type": "boolean",
+          "required": false,
+          "array": false,
+          "default": false
+        },
+        {
+          "key": "dailyDigestEnabled",
+          "type": "boolean",
+          "required": false,
+          "array": false,
+          "default": false
         }
       ],
       "indexes": []
@@ -707,6 +770,210 @@
           ]
         }
       ]
+    },
+    {
+      "$id": "usage_daily",
+      "$permissions": [],
+      "databaseId": "mio",
+      "name": "Daily usage",
+      "enabled": true,
+      "rowSecurity": true,
+      "columns": [
+        {
+          "key": "ownerId",
+          "type": "varchar",
+          "required": true,
+          "array": false,
+          "size": 36
+        },
+        {
+          "key": "date",
+          "type": "varchar",
+          "required": true,
+          "array": false,
+          "size": 10
+        },
+        {
+          "key": "inboundSms",
+          "type": "integer",
+          "required": true,
+          "array": false,
+          "min": 0,
+          "max": 9007199254740991
+        },
+        {
+          "key": "outboundSms",
+          "type": "integer",
+          "required": true,
+          "array": false,
+          "min": 0,
+          "max": 9007199254740991
+        },
+        {
+          "key": "aiTurns",
+          "type": "integer",
+          "required": true,
+          "array": false,
+          "min": 0,
+          "max": 9007199254740991
+        },
+        {
+          "key": "inputTokens",
+          "type": "integer",
+          "required": true,
+          "array": false,
+          "min": 0,
+          "max": 9007199254740991
+        },
+        {
+          "key": "outputTokens",
+          "type": "integer",
+          "required": true,
+          "array": false,
+          "min": 0,
+          "max": 9007199254740991
+        },
+        {
+          "key": "aiReservedMicros",
+          "type": "integer",
+          "required": true,
+          "array": false,
+          "min": 0,
+          "max": 9007199254740991
+        },
+        {
+          "key": "smsReservedMicros",
+          "type": "integer",
+          "required": true,
+          "array": false,
+          "min": 0,
+          "max": 9007199254740991
+        }
+      ],
+      "indexes": [
+        {
+          "key": "usage_owner_date",
+          "type": "unique",
+          "columns": [
+            "ownerId",
+            "date"
+          ],
+          "orders": [
+            "ASC",
+            "ASC"
+          ]
+        }
+      ]
+    },
+    {
+      "$id": "usage_global",
+      "$permissions": [],
+      "databaseId": "mio",
+      "name": "Usage reservation buckets",
+      "enabled": true,
+      "rowSecurity": true,
+      "columns": [
+        {
+          "key": "bucketKey",
+          "type": "varchar",
+          "required": true,
+          "array": false,
+          "size": 100
+        },
+        {
+          "key": "count",
+          "type": "integer",
+          "required": true,
+          "array": false,
+          "min": 0,
+          "max": 9007199254740991
+        },
+        {
+          "key": "aiReservedMicros",
+          "type": "integer",
+          "required": true,
+          "array": false,
+          "min": 0,
+          "max": 9007199254740991
+        },
+        {
+          "key": "smsReservedMicros",
+          "type": "integer",
+          "required": true,
+          "array": false,
+          "min": 0,
+          "max": 9007199254740991
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "$id": "usage_events",
+      "$permissions": [],
+      "databaseId": "mio",
+      "name": "Usage reservation events",
+      "enabled": true,
+      "rowSecurity": true,
+      "columns": [
+        {
+          "key": "ownerId",
+          "type": "varchar",
+          "required": true,
+          "array": false,
+          "size": 36
+        },
+        {
+          "key": "operationHash",
+          "type": "varchar",
+          "required": true,
+          "array": false,
+          "size": 64
+        },
+        {
+          "key": "kind",
+          "type": "varchar",
+          "required": true,
+          "array": false,
+          "size": 16
+        },
+        {
+          "key": "date",
+          "type": "varchar",
+          "required": true,
+          "array": false,
+          "size": 10
+        },
+        {
+          "key": "dailyId",
+          "type": "varchar",
+          "required": true,
+          "array": false,
+          "size": 36
+        },
+        {
+          "key": "inputTokens",
+          "type": "integer",
+          "required": true,
+          "array": false,
+          "min": 0,
+          "max": 9007199254740991
+        },
+        {
+          "key": "outputTokens",
+          "type": "integer",
+          "required": true,
+          "array": false,
+          "min": 0,
+          "max": 9007199254740991
+        },
+        {
+          "key": "usageRecorded",
+          "type": "boolean",
+          "required": true,
+          "array": false
+        }
+      ],
+      "indexes": []
     }
   ],
   "buckets": [
@@ -748,7 +1015,8 @@
       "events": [
         "tablesdb.mio.tables.sms_jobs.rows.*.create",
         "tablesdb.mio.tables.notes.rows.*.update",
-        "tablesdb.mio.tables.notes.rows.*.delete"
+        "tablesdb.mio.tables.notes.rows.*.delete",
+        "tablesdb.mio.tables.reminders.rows.*.update"
       ],
       "schedule": "* * * * *",
       "timeout": 120,
