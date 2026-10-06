@@ -9,9 +9,12 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "node --experimental-strip-types --test tests/*.test.ts",
-    "appwrite:generate": "appwrite types lib/generated/appwrite.ts --language ts",
+    "appwrite:generate": "appwrite types lib/generated/appwrite.ts --language ts && appwrite types functions/mio-sms/src/generated.ts --language ts",
     "appwrite:deploy": "node scripts/prepare-site.mjs && appwrite push site --site-id mio-web --force",
-    "appwrite:verify": "node scripts/verify-appwrite.mjs"
+    "appwrite:verify": "node scripts/verify-appwrite.mjs",
+    "sms:build": "pnpm --dir functions/mio-sms build",
+    "sms:deploy": "node scripts/prepare-function.mjs && appwrite push function --function-id mio-sms --activate --force",
+    "sms:verify": "node --experimental-strip-types scripts/verify-sms.mjs"
   },
   "dependencies": {
     "@appwrite.io/react": "^0.1.0",

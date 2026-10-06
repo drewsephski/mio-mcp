@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { unstable_rethrow } from "next/navigation";
-import type { ActionResult, Attachment, Note } from "@/lib/models";
+import type { ActionResult, Attachment, Note, NotesPage } from "@/lib/models";
 import { getActionError } from "@/lib/errors";
 import { getNotesService } from "@/lib/notes";
 import { archiveNoteSchema, InputError, resourceIdSchema, updateNoteSchema, validateAttachment } from "@/lib/notes-validation";
@@ -52,4 +52,9 @@ export async function uploadAttachment(formData: FormData): Promise<ActionResult
 
 export async function deleteAttachment(id: string): Promise<ActionResult<{ id: string }>> {
   return mutate(async () => (await getNotesService()).deleteAttachment(resourceIdSchema.parse(id)));
+}
+
+export async function refreshNotes(input: { search?: string; archived?: boolean; cursor?: string }): Promise<ActionResult<NotesPage>> {
+  try { return { ok: true, data: await (await getNotesService()).listNotes(input) }; }
+  catch (error) { unstable_rethrow(error); return { ok: false, error: getActionError(error) }; }
 }

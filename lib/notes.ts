@@ -8,7 +8,7 @@ import type { Attachments as AttachmentRow, Notes as NoteRow } from "./generated
 import { createNotesService, type NotesStore } from "./notes-service";
 
 function toNote(row: NoteRow): Note {
-  return { id: row.$id, ownerId: row.ownerId, title: row.title, body: row.body, archived: row.archived ?? false, createdAt: row.$createdAt, updatedAt: row.$updatedAt };
+  return { id: row.$id, ownerId: row.ownerId, title: row.title, body: row.body, archived: row.archived ?? false, source: row.source === "sms" ? "sms" : "web", createdAt: row.$createdAt, updatedAt: row.$updatedAt };
 }
 
 function toAttachment(row: AttachmentRow): Attachment {
@@ -28,7 +28,7 @@ export async function getNotesService() {
       return { rows: result.rows.map(toNote), total: result.total };
     },
     async getNote(rowId) { return toNote(await tables.getRow<NoteRow>({ ...notes, rowId })); },
-    async createNote(rowId, data, permissions) { return toNote(await tables.createRow<NoteRow>({ ...notes, rowId, data, permissions })); },
+    async createNote(rowId, data, permissions) { return toNote(await tables.createRow<NoteRow>({ ...notes, rowId, data: { ...data, source: "web" }, permissions })); },
     async updateNote(rowId, data) { return toNote(await tables.updateRow<NoteRow>({ ...notes, rowId, data })); },
     async deleteNote(rowId) { await tables.deleteRow({ ...notes, rowId }); },
     async listAttachments(queries) {

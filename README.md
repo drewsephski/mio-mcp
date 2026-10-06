@@ -1,6 +1,6 @@
 # Mio
 
-A private notes workspace built with Next.js App Router and Appwrite Cloud. The white-and-blue landing page leads into account creation and a dashboard with note editing, title search, archiving, and private file attachments.
+Your notes have a phone number. Mio captures private notes through SMS, with an Appwrite Function, TablesDB, Messaging/Twilio, and Realtime. The Next.js workspace retains editing, title search, archiving, and private attachments. See [docs/SMS.md](docs/SMS.md) for connection, shared Vapi routing, security, deployment, and verification.
 
 ## Run locally
 
@@ -14,7 +14,7 @@ Set `APPWRITE_API_KEY` to a server-only key with `users.read`, `users.write`, an
 
 ## Appwrite resources
 
-`appwrite.config.json` records database `mio`, the `notes` and `attachments` tables, the existing attachment bucket, and the SSR Site `mio-web`.
+`appwrite.config.json` records database `mio`, the `notes`, `attachments`, and server-controlled `sms_*` tables, the existing attachment bucket, and the SSR Site `mio-web`.
 
 ```sh
 appwrite login
@@ -34,6 +34,7 @@ The CLI generates row types in `lib/generated/appwrite.ts`. `lib/notes.ts` suppl
 - `/`: landing page with an explicitly labeled interactive example.
 - `/auth`: signup, signin, and current-account signout.
 - `/auth/forgot-password`, `/auth/reset-password`, `/auth/verify`: recovery and verification flows, with explicit form submission and trusted callback URLs from `APP_URL`.
+- `/settings/sms`: verified phone connection, status, and disconnection.
 - `/dashboard`: authenticated notes, title search (three characters minimum), cursor pagination, archive/restore, and attachments.
 - `/api/attachments/:id`: authenticated download with ownership checks and no-store responses.
 
@@ -59,6 +60,7 @@ pnpm typecheck
 pnpm test
 pnpm build
 pnpm appwrite:verify
+pnpm sms:verify
 ```
 
 Live verification requires an ignored `.env.provisioning` containing a privileged `APPWRITE_PROVISIONING_KEY`. It creates isolated temporary accounts/data, exercises raw Appwrite permission checks, and removes only the resources it created. Keep that key out of the application runtime.
